@@ -30,5 +30,11 @@
     ],
     "js": ["content-root.js", "content-react.js"],
     "css": ["content-root.css"]
-  }]
+  }],
+  "web_accessible_resources": [
+    {
+      "resources": ["icon-128.png", "icon-34.png", "media.png"],
+      "matches": []
+    }
+  ]
 }

@@ -1,17 +1,16 @@
 {
   "manifest_version": 3,
   "version": "1.0",
-  "name": "Extension Starter",
-  "description": "Extensions go brrrr",
-  "author": "Dragan Okanovic <dragan.okan@gmail.com>",
-  "homepage_url": "https://github.com/abstractalgo/react-browser-extension",
+  "name": "W3NS",
+  "description": "Web3NFT.Social",
+  "author": "web3hacker<dev@web3hacker.ninja>",
+  "homepage_url": "https://Web3NFT.Social",
   "icons": {
     "16": "icon.png",
     "32": "icon.png",
     "48": "icon.png",
     "128": "icon.png"
   },
-
   "permissions": [
     "tabs",
     "activeTab",
@@ -24,16 +23,27 @@
   "background": {
     "service_worker": "background.js"
   },
-  "content_scripts": [{
-    "matches": [
-      "<all_urls>"
-    ],
-    "js": ["content-root.js", "content-react.js"],
-    "css": ["content-root.css"]
-  }],
+  "content_scripts": [
+    {
+      "matches": [
+        "<all_urls>"
+      ],
+      "js": [
+        "content-root.js",
+        "content-react.js"
+      ],
+      "css": [
+        "content-root.css"
+      ]
+    }
+  ],
   "web_accessible_resources": [
     {
-      "resources": ["icon-128.png", "icon-34.png", "media.png"],
+      "resources": [
+        "icon-128.png",
+        "icon-34.png",
+        "media.png"
+      ],
       "matches": []
     }
   ]

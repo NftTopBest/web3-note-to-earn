@@ -1,4 +1,5 @@
 import { Group, Box, Text, Avatar, Indicator, Paper, Blockquote, Button } from '@mantine/core';
+import { useWallet } from '../provider/WalletProvider';
 
 type UserProfileProps = {
   goToEdit: () => void;
@@ -6,6 +7,15 @@ type UserProfileProps = {
 
 function UserProfile(props: UserProfileProps) {
   const { goToEdit } = props;
+  const { isAuthenticated, connectWallet, disconnectWallet } = useWallet();
+
+  const clickToConnect = async () => {
+    if (isAuthenticated) {
+      disconnectWallet();
+    } else {
+      connectWallet();
+    }
+  };
 
   return (
     <>
@@ -32,8 +42,17 @@ function UserProfile(props: UserProfileProps) {
           Life is like an npm install – you never know what you are going to get.
         </Blockquote>
       </Paper>
+      {/* TODO - 隐藏调试按钮 */}
+      {/* <Group position="right" mt="64px">
+        <Button onClick={clickToConnect} variant="light" id="wallet-connect">
+          Connect
+        </Button>
+      </Group> */}
+
       <Group position="right" mt="64px">
-        <Button onClick={goToEdit} variant="light">Edit</Button>
+        <Button onClick={goToEdit} variant="light">
+          Edit
+        </Button>
       </Group>
     </>
   );

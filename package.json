@@ -7,6 +7,10 @@
     "zip": "(rm packed.zip || true) && zip -r packed.zip build/"
   },
   "devDependencies": {
+    "stream-browserify": "^3.0.0",
     "web-ext": "^6.6.0"
+  },
+  "dependencies": {
+    "web3": "^1.7.3"
   }
 }

@@ -1400,6 +1400,11 @@
     react-popper "^2.2.5"
     react-textarea-autosize "^8.3.2"
 
+"@mantine/form@^4.2.8":
+  version "4.2.8"
+  resolved "https://registry.npmjs.org/@mantine/form/-/form-4.2.8.tgz#98d93ebe687034a2929c285c2badf9a66b5a470f"
+  integrity sha512-BjLJDPqZ7bwSZNv/H2coM2MeS4ls+J70HJIgbBpf37opYPVjMJTSRvY9ecrh69p3X89bT5KKfbjNdk3CIwIfvg==
+
 "@mantine/hooks@^4.2.8":
   version "4.2.8"
   resolved "https://registry.npmjs.org/@mantine/hooks/-/hooks-4.2.8.tgz#eeae72da40e30b6a8497a7e6c81a61aab051ef8e"
@@ -9281,3 +9286,8 @@ yocto-queue@^0.1.0:
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/yocto-queue/-/yocto-queue-0.1.0.tgz#0294eb3dee05028d31ee1a5fa2c556a6aaf10a1b"
   integrity sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+
+zod@^3.17.3:
+  version "3.17.3"
+  resolved "https://registry.npmjs.org/zod/-/zod-3.17.3.tgz#86abbc670ff0063a4588d85a4dcc917d6e4af2ba"
+  integrity sha512-4oKP5zvG6GGbMlqBkI5FESOAweldEhSOZ6LI6cG+JzUT7ofj1ZOC0PJudpQOpT1iqOFpYYtX5Pw0+o403y4bcg==

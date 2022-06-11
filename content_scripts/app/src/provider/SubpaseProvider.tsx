@@ -34,9 +34,12 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
 
     setError(error?.message ?? '');
     setLoadingInitial(false);
+
+    return error;
   };
 
-  const getUserInfo = async (account: string) => {
+  const getUserPost = async (account: string) => {
+    // TODO 错误处理
     const { data, error } = await supabase
       .from('post')
       .select(
@@ -46,7 +49,7 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
       )
       .eq('author', account);
 
-    return data && data[0] ? data[0] : {};
+    return data;
   };
 
   return (
@@ -60,7 +63,7 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
         error,
         username,
         setUsername,
-        getUserInfo,
+        getUserPost,
       }}
     >
       {children}

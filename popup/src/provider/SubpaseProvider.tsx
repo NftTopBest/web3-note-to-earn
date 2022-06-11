@@ -39,10 +39,10 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
 
       const tabId = (await getCurrentTabId()) as number;
 
-      console.log("tabId ", tabId);
-      
+      console.log('tabId ', tabId);
+
       connection.current = chrome.tabs.connect(tabId, { name: 'popup' });
-      console.log("connection.current ", connection.current);
+      console.log('connection.current ', connection.current);
     })();
   }, []);
 
@@ -53,7 +53,6 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
 
     if (data?.length === 0) {
       const { data, error } = await supabase.from('user').insert([{ address }]);
-
       console.log('user data ', data);
       setError(error ? 'Sign up fail' : '');
       setUsername(data ? data[0].address : '');

@@ -1,12 +1,14 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 // Components
 import { Button, Group, Box, Textarea, MultiSelect, TextInput, Switch } from '@mantine/core';
+import { RichTextEditor } from '@mantine/rte';
 // Hooks
 import { useForm, zodResolver } from '@mantine/form';
 // utils
 import { z } from 'zod';
 import { UserInfo } from '../App';
-import { useSubpaseContext } from '../provider/SubpaseProvider'
+import { useSubpaseContext } from '../provider/SubpaseProvider';
+import { noop } from '../utils/functionality';
 
 const data = [
   { value: 'react', label: 'React' },
@@ -31,12 +33,14 @@ const schema = z.object({
 type FormProps = {
   onPreviousClick: () => void;
   userInfo?: UserInfo | null;
+  onSaveSuccess?: () => void;
 };
 
 function Form(props: FormProps) {
-  const { onPreviousClick, userInfo } = props;
+  const { onPreviousClick, userInfo, onSaveSuccess = noop } = props;
   const [isPublic, setIsPublic] = useState(true);
   const { save } = useSubpaseContext();
+  const [value, onChange] = useState('<p>Type @ or # to see mentions autocomplete</p>');
 
   const form = useForm({
     schema: zodResolver(schema),
@@ -53,16 +57,23 @@ function Form(props: FormProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('form.values; ', form.values);
-    save({
+    console.log('userInfo ', userInfo);
+    const error = save({
       ...form.values,
-      tags: form.values.tags.join(','),
+      content: value,
       author: userInfo?.address,
+      tags: form.values.tags.join(','),
     });
+
+    onSaveSuccess();
   };
 
+  useEffect(() => {
+    form.reset();
+  }, []);
+
   return (
-    <Box sx={{ width: '90%', marginTop: '48px' }} mx="auto">
+    <Box sx={{ width: '90%', marginTop: '48px', maxWidth: 900 }} mx="auto">
       <form onSubmit={handleSubmit}>
         <TextInput required label="Title" placeholder="Please input your title here" {...form.getInputProps('title')} />
         <Textarea
@@ -73,22 +84,22 @@ function Form(props: FormProps) {
           {...form.getInputProps('excerpt')}
         />
         <MultiSelect
-          sx={{ marginTop: '24px' }}
+          sx={{ marginTop: 24, marginBottom: 36 }}
           data={data}
           label="Your tags"
           placeholder="Pick all that you like"
           {...form.getInputProps('tags')}
         />
-        <Textarea
-          sx={{ marginTop: '24px' }}
-          placeholder="News"
-          label="Your blog here"
-          autosize
-          minRows={6}
-          {...form.getInputProps('content')}
+        <RichTextEditor
+          value={value}
+          onChange={onChange}
+          placeholder="Type @ or # to see mentions autocomplete"
+          style={{
+            minHeight: 300,
+          }}
         />
         <Switch
-          sx={{ marginTop: '24px' }}
+          sx={{ marginTop: '60px' }}
           size="md"
           checked={isPublic}
           onClick={() => setIsPublic((prev) => !prev)}

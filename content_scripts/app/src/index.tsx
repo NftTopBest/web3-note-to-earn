@@ -6,12 +6,37 @@ import App from './App';
 import './bla.scss';
 import WalletProvider from './provider/WalletProvider';
 import { SubpaseProvider } from './provider/SubpaseProvider';
+import { MantineProvider } from '@mantine/core';
+import { darkMode } from './style/theme';
 
 createRoot(document.getElementById('content-script-root')!).render(
   <React.StrictMode>
     <WalletProvider>
       <SubpaseProvider>
-        <App />
+        <MantineProvider
+          theme={{
+            colorScheme: 'dark',
+            colors: {
+              brand: [
+                '#EAE5FF',
+                '#C3B8FF',
+                '#9D8AFF',
+                '#775CFF',
+                '#866ffa',
+                '#2A00FF',
+                '#2200CC',
+                '#190099',
+                '#110066',
+                '#7B61FF',
+              ],
+            },
+            primaryShade: 3,
+            primaryColor: 'brand',
+          }}
+          withNormalizeCSS
+        >
+          <App />
+        </MantineProvider>
       </SubpaseProvider>
     </WalletProvider>
   </React.StrictMode>,

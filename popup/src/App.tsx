@@ -1,16 +1,22 @@
 import { FC } from 'react';
-import { Blockquote, Button, Paper, Box } from '@mantine/core';
+import { Blockquote, Button, Paper, Box, Text } from '@mantine/core';
 import { useWallet } from './provider/WalletProvider';
 import './App.css';
+import { useSubpaseContext } from './provider/SubpaseProvider';
 
 const App: FC = () => {
-  const { isAuthenticated, connectWallet, disconnectWallet } = useWallet();
+  const { isAuthenticated, connectWallet, disconnectWallet, account } = useWallet();
+  const { initializeUser } = useSubpaseContext();
 
   const clickToConnect = async () => {
+    console.log('isAuthenticated ', isAuthenticated);
     if (isAuthenticated) {
       disconnectWallet();
     } else {
-      connectWallet();
+      const { account } = await connectWallet();
+      if (account) {
+        initializeUser(account);
+      }
     }
   };
 
@@ -25,9 +31,9 @@ const App: FC = () => {
         <Button variant="gradient" onClick={clickToConnect} gradient={{ from: 'teal', to: 'blue', deg: 60 }}>
           Connect
         </Button>
-        <Button variant="gradient" gradient={{ from: '#ed6ea0', to: '#ec8c69', deg: 35 }}>
-          Register
-        </Button>
+      </Box>
+      <Box sx={{ display: 'flex', width: '50%', justifyContent: 'center', marginTop: '36px' }}>
+        <Text size="sm">{account}</Text>
       </Box>
     </Paper>
   );

@@ -5,11 +5,14 @@ import App from './App';
 
 import './bla.scss';
 import WalletProvider from './provider/WalletProvider';
+import { SubpaseProvider } from './provider/SubpaseProvider';
 
 createRoot(document.getElementById('content-script-root')!).render(
   <React.StrictMode>
     <WalletProvider>
-      <App />
+      <SubpaseProvider>
+        <App />
+      </SubpaseProvider>
     </WalletProvider>
   </React.StrictMode>,
 );

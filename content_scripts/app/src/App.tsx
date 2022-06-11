@@ -1,10 +1,18 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Drawer, Button, Box, Badge, Transition } from '@mantine/core';
 import { BrandTwitter, InfoSquare } from 'tabler-icons-react';
 import { useClickOutside } from '@mantine/hooks';
 import './App.css';
 import Form from './components/Form';
 import UserProfile from './components/UserProfile';
+
+
+export type UserInfo = {
+  id: number;
+  address: string;
+  email: null | string;
+  nickName: string;
+};
 
 const TEMP_BADAGE: Record<string, string | number> = {
   blog: 23, // how many article writing on the W3NS/${address}/blog
@@ -22,7 +30,9 @@ function App() {
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [userInfo, setUserInfo] = useState<UserInfo | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
+
 
   const goBack = () => {
     setEditing(false);
@@ -32,12 +42,26 @@ function App() {
     setEditing(true);
   };
 
+  useEffect(() => {
+    // 监听链接
+    chrome.runtime?.onConnect.addListener((res) => {
+      if (res.name === 'popup') {
+        res.onMessage.addListener((user: UserInfo) => {
+          console.log('🥓: popup.js receive', user);
+          if (user) {
+            setUserInfo(user);
+          }
+        });
+      }
+    });
+  }, []);
+
   return (
     <Box className="App">
       <Drawer opened={opened} position="right" onClose={() => setOpened(false)} title="My Brand" padding="xl" size="xl">
         <>
           {editing && <Form onPreviousClick={goBack} />}
-          {!editing && <UserProfile goToEdit={goToEditProfile} />}
+          {!editing && <UserProfile goToEdit={goToEditProfile} userInfo={userInfo} />}
         </>
       </Drawer>
 

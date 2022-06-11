@@ -95,12 +95,22 @@ const WalletProvider = React.memo(({ children }) => {
         setAuthenticated(true);
         storage.set('metamask-connected', { connected: true });
         subscribeToEvents(provider);
+
+        return {
+          account,
+          chainId,
+        };
       }
     } catch (e) {
       console.log('error while connect', e);
     } finally {
       setAppLoading(false);
     }
+
+    return {
+      account,
+      chainId,
+    };
   };
 
   const disconnectWallet = () => {
@@ -143,6 +153,7 @@ const WalletProvider = React.memo(({ children }) => {
         connectWallet,
         isAuthenticated,
         appLoading,
+        account,
       }}
     >
       {children}

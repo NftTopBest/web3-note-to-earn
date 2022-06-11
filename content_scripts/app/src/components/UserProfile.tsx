@@ -1,21 +1,33 @@
-import { Group, Box, Text, Avatar, Indicator, Paper, Blockquote, Button } from '@mantine/core';
+import { Group, Box, Text, Avatar, Indicator, Paper, Blockquote, Button, Title } from '@mantine/core';
+import { UserInfo } from '../App';
+import { useEffect, useState } from 'react';
+import { useSubpaseContext } from '../provider/SubpaseProvider';
 import { useWallet } from '../provider/WalletProvider';
 
 type UserProfileProps = {
   goToEdit: () => void;
+  userInfo?: UserInfo | null;
 };
 
 function UserProfile(props: UserProfileProps) {
-  const { goToEdit } = props;
-  const { isAuthenticated, connectWallet, disconnectWallet } = useWallet();
+  const { goToEdit, userInfo } = props;
+  const [userInfoInner, setUserInfo] = useState<any>({});
+  const { getUserInfo } = useSubpaseContext();
 
-  const clickToConnect = async () => {
-    if (isAuthenticated) {
-      disconnectWallet();
-    } else {
-      connectWallet();
-    }
-  };
+  useEffect(() => {
+    (async () => {
+      if (userInfo?.address) {
+        const data = await getUserInfo(userInfo?.address);
+
+        console.log('Form request data ', data);
+        setUserInfo(data);
+      }
+    })();
+  }, [userInfo]);
+
+  const userInfoKeys = Object.keys(userInfoInner);
+
+  console.log("userInfoKeys ", userInfoKeys);
 
   return (
     <>
@@ -32,7 +44,8 @@ function UserProfile(props: UserProfileProps) {
             </Group>
           </Box>
           <Box>
-            <Text>Paper is the most basic ui component</Text>
+            <Text size="xs">Account: {userInfo?.address}</Text>
+
             <Text>
               Use it to create cards, dropdowns, modals and other components that require background with shadow
             </Text>
@@ -42,12 +55,16 @@ function UserProfile(props: UserProfileProps) {
           Life is like an npm install – you never know what you are going to get.
         </Blockquote>
       </Paper>
-      {/* TODO - 隐藏调试按钮 */}
-      {/* <Group position="right" mt="64px">
-        <Button onClick={clickToConnect} variant="light" id="wallet-connect">
-          Connect
-        </Button>
-      </Group> */}
+
+      <Box>
+        {userInfoKeys.length > 0 &&
+          userInfoKeys.map((key) => (
+            <Box key={key} sx={{ marginTop: "24px"}}>
+              <Title order={3}>{key}</Title>
+              <Text size="lg">{userInfoInner[key]}</Text>
+            </Box>
+          ))}
+      </Box>
 
       <Group position="right" mt="64px">
         <Button onClick={goToEdit} variant="light">

@@ -5,6 +5,8 @@ import { Button, Group, Box, Textarea, MultiSelect, TextInput, Switch } from '@m
 import { useForm, zodResolver } from '@mantine/form';
 // utils
 import { z } from 'zod';
+import { UserInfo } from '../App';
+import { useSubpaseContext } from '../provider/SubpaseProvider'
 
 const data = [
   { value: 'react', label: 'React' },
@@ -23,16 +25,18 @@ const schema = z.object({
   title: z.string().min(2, { message: 'You must be at least 2 to create an account' }),
   isPublic: z.boolean(),
   tags: z.array(z.string()),
-  description: z.string(),
+  content: z.string(),
 });
 
 type FormProps = {
   onPreviousClick: () => void;
+  userInfo?: UserInfo | null;
 };
 
 function Form(props: FormProps) {
-  const { onPreviousClick } = props;
+  const { onPreviousClick, userInfo } = props;
   const [isPublic, setIsPublic] = useState(true);
+  const { save } = useSubpaseContext();
 
   const form = useForm({
     schema: zodResolver(schema),
@@ -42,14 +46,24 @@ function Form(props: FormProps) {
       email: '',
       title: '',
       excerpt: '',
-      description: '',
-      isPublic: false,
+      content: '',
+      isPublic: true,
     },
   });
 
+  const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    console.log('form.values; ', form.values);
+    save({
+      ...form.values,
+      tags: form.values.tags.join(','),
+      author: userInfo?.address,
+    });
+  };
+
   return (
     <Box sx={{ width: '90%', marginTop: '48px' }} mx="auto">
-      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+      <form onSubmit={handleSubmit}>
         <TextInput required label="Title" placeholder="Please input your title here" {...form.getInputProps('title')} />
         <Textarea
           sx={{ marginTop: '24px' }}
@@ -71,7 +85,7 @@ function Form(props: FormProps) {
           label="Your blog here"
           autosize
           minRows={6}
-          {...form.getInputProps('description')}
+          {...form.getInputProps('content')}
         />
         <Switch
           sx={{ marginTop: '24px' }}

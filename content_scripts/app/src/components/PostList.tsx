@@ -5,7 +5,6 @@ import { noop } from '../utils/functionality';
 // Components
 import List from './List';
 
-
 type PostListProps = {
   data: PostInfo[];
   onItemSelected?: (key: string | number) => void;
@@ -14,15 +13,15 @@ type PostListProps = {
 
 function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: PostListProps) {
   return (
-    <Box sx={{ marginLeft: 24, minWidth: 500, display: "flex", flexDirection: "column", alignItems: "flex-end" }}>
-      <ScrollArea style={{ width: '90%', height: "100%", borderRadius: 8 }}>
+    <Box sx={{ marginLeft: 24, minWidth: 500, display: 'flex', flexDirection: 'column', alignItems: 'flex-end' }}>
+      <Button sx={{ marginTop: 48 }} onClick={triggerEditChange}>
+        Create Post
+      </Button>
+      <ScrollArea style={{ width: '90%', height: '100%', borderRadius: 8 }}>
         <Card shadow="xl" sx={{ width: '100%' }} mx="auto">
           <List list={data} onItemSelected={onItemSelected} />
         </Card>
       </ScrollArea>
-      <Button sx={{ marginTop: 48 }} onClick={triggerEditChange}>
-        Create Post
-      </Button>
     </Box>
   );
 }

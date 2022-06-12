@@ -29,8 +29,6 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
     setLoadingInitial(true);
     const { data, error } = await supabase.from('post').insert([formData]);
 
-    console.log('Save data ', data);
-
     setError(error?.message ?? '');
     setLoadingInitial(false);
 

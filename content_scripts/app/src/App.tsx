@@ -11,21 +11,9 @@ import {
   Title,
   Divider,
   Group,
-  ThemeIcon,
   ActionIcon,
 } from '@mantine/core';
-import {
-  BookDownload,
-  Bookmark,
-  Books,
-  Edit,
-  Photo,
-  Seeding,
-  ThumbUp,
-  View360,
-  Viewfinder,
-  ViewportWide,
-} from 'tabler-icons-react';
+import { Books, Edit, ThumbUp } from 'tabler-icons-react';
 import dayjs from 'dayjs';
 import { useClickOutside } from '@mantine/hooks';
 import Form from './components/Form';
@@ -86,17 +74,14 @@ function App() {
     setEditing(true);
   };
 
-  useEffect(() => {
-    (async () => {
-      if (!editing) {
-        setLoading(true);
-        const post: any[] = await getUserPost(userInfo?.address);
-        // TODO - 增加排序功能已替换前端的 reverse
-        setPostInfo(post.reverse());
-        setLoading(false);
-      }
-    })();
-  }, [editing]);
+
+  const executeQueryPost = async (account?: string) => {
+    setLoading(true);
+    const post: any[] = await getUserPost(account ?? userInfo?.address);
+    // TODO - 增加排序功能已替换前端的 reverse
+    setPostInfo(post.reverse());
+    setLoading(false);
+  }
 
   useEffect(() => {
     const account = localStorage.getItem('account') ?? '';
@@ -105,24 +90,29 @@ function App() {
         ...prev,
         address: account,
       }));
+      executeQueryPost(account);
     }
+  }, []);
 
-    // 监听链接
-    chrome.runtime?.onConnect.addListener((res) => {
+  useEffect(() => {
+    const listenerHandler = (res: any) => {
       if (res.name === 'popup') {
         res.onMessage.addListener(async (user: UserInfo) => {
           console.log('🥓: popup.js receive', user);
           if (user && user?.address) {
-            setLoading(true);
-            localStorage.setItem('account', user?.address);
-            const post = await getUserPost(user?.address);
-            setPostInfo(post);
+            executeQueryPost(user.address);
             setUserInfo(user);
             setLoading(false);
           }
         });
       }
-    });
+    };
+    // 监听链接
+    chrome.runtime?.onConnect.addListener(listenerHandler);
+
+    return () => {
+      chrome.runtime.onConnect.removeListener(listenerHandler);
+    };
   }, []);
 
   return userInfo?.address ? (
@@ -142,6 +132,9 @@ function App() {
           },
           overlay: {
             backgroundColor: '#1011132e !important',
+          },
+          drawer: {
+            minWidth: 1200,
           },
         }}
       >

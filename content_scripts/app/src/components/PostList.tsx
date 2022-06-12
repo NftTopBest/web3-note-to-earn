@@ -14,8 +14,6 @@ type PostListProps = {
 
 function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: PostListProps) {
 
-  console.log("data ", data)
-
   return (
     <Box
       sx={{

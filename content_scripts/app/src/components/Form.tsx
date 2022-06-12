@@ -57,7 +57,6 @@ function Form(props: FormProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    console.log('userInfo ', userInfo);
     const error = save({
       ...form.values,
       content: value,

@@ -28,25 +28,18 @@ function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: Pos
       <Tabs
         styles={{
           body: { height: '100%' },
-          tabInner: { fontSize: 20, fontWeight: 600 },
+          tabInner: { fontSize: 24, fontWeight: 600 },
           tabsListWrapper: { marginBottom: 12 }
         }}
       >
-        <Tabs.Tab sx={{ height: '100%' }} label="Gallery">
+        <Tabs.Tab sx={{ height: '100%' }} label="ALL">
           <ScrollArea style={{ width: '100%', height: 900, borderRadius: 8 }}>
             <Card shadow="xl" sx={{ width: '100%', minHeight: "100%" }} mx="auto">
               <List list={data} onItemSelected={onItemSelected} />
             </Card>
           </ScrollArea>
         </Tabs.Tab>
-        <Tabs.Tab sx={{ height: '100%' }} label="Messages" >
-          <ScrollArea style={{ width: '100%', height: 800, borderRadius: 8 }}>
-            <Card shadow="xl" sx={{ width: '100%', minHeight: "100%" }} mx="auto">
-              <List list={data} onItemSelected={onItemSelected} />
-            </Card>
-          </ScrollArea>
-        </Tabs.Tab>
-        <Tabs.Tab sx={{ height: '100%' }} label="Settings">
+        <Tabs.Tab sx={{ height: '100%' }} label="MY" >
           <ScrollArea style={{ width: '100%', height: 800, borderRadius: 8 }}>
             <Card shadow="xl" sx={{ width: '100%', minHeight: "100%" }} mx="auto">
               <List list={data} onItemSelected={onItemSelected} />

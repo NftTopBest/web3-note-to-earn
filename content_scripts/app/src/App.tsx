@@ -115,10 +115,6 @@ function App() {
     };
     // 监听链接
     chrome.runtime?.onConnect.addListener(listenerHandler);
-
-    return () => {
-      chrome.runtime.onConnect.removeListener(listenerHandler);
-    };
   }, []);
 
   return userInfo?.address ? (

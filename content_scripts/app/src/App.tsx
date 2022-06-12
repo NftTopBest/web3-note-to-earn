@@ -83,6 +83,11 @@ function App() {
     setLoading(false);
   }
 
+
+  useEffect(() => {
+    if (!editing) executeQueryPost();
+  }, [editing]);
+
   useEffect(() => {
     const account = localStorage.getItem('account') ?? '';
     if (account) {
@@ -100,6 +105,7 @@ function App() {
         res.onMessage.addListener(async (user: UserInfo) => {
           console.log('🥓: popup.js receive', user);
           if (user && user?.address) {
+
             executeQueryPost(user.address);
             setUserInfo(user);
             setLoading(false);

@@ -1,12 +1,37 @@
 import { useEffect, useState } from 'react';
-import { Drawer, Button, Box, Badge, Transition, TypographyStylesProvider, LoadingOverlay } from '@mantine/core';
-import { Edit } from 'tabler-icons-react';
-// import { BrandTwitter, InfoSquare } from 'tabler-icons-react';
+import {
+  Drawer,
+  Button,
+  Text,
+  Box,
+  Badge,
+  Transition,
+  TypographyStylesProvider,
+  LoadingOverlay,
+  Title,
+  Divider,
+  Group,
+  ThemeIcon,
+  ActionIcon,
+} from '@mantine/core';
+import {
+  BookDownload,
+  Bookmark,
+  Books,
+  Edit,
+  Photo,
+  Seeding,
+  ThumbUp,
+  View360,
+  Viewfinder,
+  ViewportWide,
+} from 'tabler-icons-react';
+import dayjs from 'dayjs';
 import { useClickOutside } from '@mantine/hooks';
-import './App.css';
 import Form from './components/Form';
 import PostList from './components/PostList';
 import { useSubpaseContext } from './provider/SubpaseProvider';
+import './App.css';
 
 export type UserInfo = {
   id: number;
@@ -26,6 +51,8 @@ export type PostInfo = {
   tags: string | null;
   title: string;
   isPublic: true;
+  created_at?: string;
+  updated_at?: string;
 };
 
 const TEMP_BADAGE: Record<string, string | number> = {
@@ -48,7 +75,7 @@ function App() {
   const [expanded, setExpanded] = useState(false);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
-  const [activedContent, setActivedContent] = useState('');
+  const [actived, setActived] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
 
   const goBack = async () => {
@@ -63,8 +90,9 @@ function App() {
     (async () => {
       if (!editing) {
         setLoading(true);
-        const post = await getUserPost(userInfo?.address);
-        setPostInfo(post);
+        const post: any[] = await getUserPost(userInfo?.address);
+        // TODO - 增加排序功能已替换前端的 reverse
+        setPostInfo(post.reverse());
         setLoading(false);
       }
     })();
@@ -105,7 +133,7 @@ function App() {
         onClose={() => setOpened(false)}
         title="Farly Post"
         padding="xl"
-        size="full"
+        size="75%"
         style={{ position: 'relative' }}
         styles={{
           title: {
@@ -120,12 +148,40 @@ function App() {
         <LoadingOverlay visible={loading} />
         {editing && <Form onPreviousClick={goBack} userInfo={userInfo as UserInfo} onSaveSuccess={goBack} />}
         {!editing && (
-          <Box sx={{ display: 'flex' }}>
+          <Box sx={{ display: 'flex', marginTop: '36px' }}>
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
               {postInfo && postInfo.length > 0 && (
                 <Box sx={{ maxWidth: 900, width: '100%', textAlign: 'left' }}>
+                  <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
+                    <Box>
+                      <Title sx={{ color: '#76DBA1' }}>{postInfo[actived].title}</Title>
+                      <Text sx={{ marginTop: 12, color: '#86909c', fontSize: 22 }}>{postInfo[actived].excerpt}</Text>
+                    </Box>
+                    <Box>
+                      <Box sx={{ textAlign: 'right', marginBottom: 12 }}>
+                        <Text sx={{ color: '#86909c', fontSize: 14 }}>
+                          Created at - {dayjs(postInfo[actived].created_at).format('YYYY MM-DD HH:mm')}
+                        </Text>
+                        <Text sx={{ color: '#86909c', fontSize: 14 }}>
+                          Updated at - {dayjs(postInfo[actived].updated_at).format('YYYY MM-DD HH:mm')}
+                        </Text>
+                      </Box>
+                    </Box>
+                  </Box>
+
+                  <Group sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
+                    <ActionIcon>
+                      <ThumbUp size={20} />
+                    </ActionIcon>
+                    <Text sx={{ fontWeight: 400 }}>123</Text>
+                    <ActionIcon>
+                      <Books size={20} />
+                    </ActionIcon>
+                    <Text sx={{ fontWeight: 400 }}>123</Text>
+                  </Group>
+                  <Divider size="lg" sx={{ margin: '24px auto' }} />
                   <TypographyStylesProvider>
-                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: activedContent }} />
+                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: postInfo[actived].content }} />
                   </TypographyStylesProvider>
                 </Box>
               )}
@@ -133,7 +189,7 @@ function App() {
             {postInfo && (
               <PostList
                 data={postInfo}
-                onItemSelected={(index) => setActivedContent(postInfo[Number(index)]?.content)}
+                onItemSelected={(index) => setActived(Number(index))}
                 triggerEditChange={goToEditProfile}
               />
             )}

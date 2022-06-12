@@ -1,6 +1,5 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
-import { userInfo } from 'os';
 
 const supabaseUrl = 'https://tsjhotxjoptpsjagggbu.supabase.co';
 const supabaseKey =
@@ -44,7 +43,7 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
       .from('post')
       .select(
         `
-    title, content, tags, thumb, view, author, isPublic, age, email
+    title, content, tags, thumb, view, author, isPublic, excerpt, age, email, updated_at, created_at
   `,
       )
       .eq('author', account);

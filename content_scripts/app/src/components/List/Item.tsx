@@ -1,8 +1,12 @@
 // Components
 import { Text, Box, Avatar, Group, Title, Badge } from '@mantine/core';
+import dayjs from 'dayjs';
+import relativeTime from 'dayjs/plugin/relativeTime';
 import { PostInfo } from '../../App';
 import { noop } from '../../utils/functionality';
 import { defaultAvatar } from '../../utils/mock';
+
+dayjs.extend(relativeTime);
 
 export type ListItemProps = {
   data: PostInfo;
@@ -12,7 +16,7 @@ export type ListItemProps = {
 function Item(props: ListItemProps) {
   const {
     onClick = noop,
-    data: { title, excerpt, tags },
+    data: { title, excerpt, tags, updated_at },
   } = props;
 
   return (
@@ -29,13 +33,14 @@ function Item(props: ListItemProps) {
     >
       <Box sx={{ marginRight: '24px' }}>
         <Group position="center">
-          <Avatar size="lg" src={defaultAvatar} />
+          <Avatar size="xl" src={defaultAvatar} />
         </Group>
+
       </Box>
       <Box>
         <Box>
-          <Title order={3}>{title}</Title>
-          <Text>{excerpt}</Text>
+          <Title order={5}>{title}</Title>
+          <Text size="sm">{excerpt}</Text>
         </Box>
         <Box mt={12}>
           {tags &&
@@ -44,6 +49,7 @@ function Item(props: ListItemProps) {
                 {tag}
               </Badge>
             ))}
+              <Text sx={{ marginTop: 12 }}>{dayjs().to(dayjs(updated_at))}</Text>
         </Box>
       </Box>
     </Box>

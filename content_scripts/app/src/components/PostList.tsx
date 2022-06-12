@@ -63,7 +63,7 @@ function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: Pos
         alignItems: 'flex-end',
       }}
     >
-      <StyledTabs
+      <Tabs
         styles={{
           body: { height: '100%' },
         }}

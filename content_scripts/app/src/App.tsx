@@ -44,7 +44,7 @@ function App() {
   const { getUserPost } = useSubpaseContext();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [expanded, setExpanded] = useState(false);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
@@ -105,7 +105,7 @@ function App() {
         onClose={() => setOpened(false)}
         title="Farly Post"
         padding="xl"
-        size="full"
+        size="75%"
         style={{ position: 'relative' }}
         styles={{
           title: {

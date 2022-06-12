@@ -14,10 +14,9 @@ const App: FC = () => {
       initializeUser(walletAccount);
       setAccount(walletAccount);
     }
-  }, [initializeUser, isAuthenticated, walletAccount]);
+  }, [isAuthenticated, walletAccount]);
 
   const clickToConnect = async () => {
-    console.log('isAuthenticated ', isAuthenticated);
     if (isAuthenticated) {
       disconnectWallet();
     } else {
@@ -44,9 +43,9 @@ const App: FC = () => {
         <Title order={4} sx={{ color: "#fff", marginBottom: 16 }}>
           Your account
         </Title>
-        <Text size="xs" color="#fff">
+        {isAuthenticated && <Text size="xs" color="#fff">
           {account}
-        </Text>
+        </Text>}
       </Box>
       <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', marginTop: '36px' }}>
         <Button onClick={clickToConnect}>{isAuthenticated ? 'Disconnect' : 'Connect'}</Button>

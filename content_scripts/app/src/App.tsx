@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Drawer, Button, Box, Badge, Transition, TypographyStylesProvider } from '@mantine/core';
+import { Drawer, Button, Box, Badge, Transition, TypographyStylesProvider, LoadingOverlay } from '@mantine/core';
 import { Edit } from 'tabler-icons-react';
 // import { BrandTwitter, InfoSquare } from 'tabler-icons-react';
 import { useClickOutside } from '@mantine/hooks';
@@ -44,10 +44,11 @@ function App() {
   const { getUserPost } = useSubpaseContext();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
-  const [contentIndex, setContentIndex] = useState(0);
+  const [activedContent, setActivedContent] = useState('');
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
 
   const goBack = async () => {
@@ -61,11 +62,13 @@ function App() {
   useEffect(() => {
     (async () => {
       if (!editing) {
+        setLoading(true);
         const post = await getUserPost(userInfo?.address);
         setPostInfo(post);
+        setLoading(false);
       }
     })();
-  }, [editing, getUserPost, userInfo?.address]);
+  }, [editing]);
 
   useEffect(() => {
     const account = localStorage.getItem('account') ?? '';
@@ -82,10 +85,12 @@ function App() {
         res.onMessage.addListener(async (user: UserInfo) => {
           console.log('🥓: popup.js receive', user);
           if (user && user?.address) {
+            setLoading(true);
             localStorage.setItem('account', user?.address);
             const post = await getUserPost(user?.address);
             setPostInfo(post);
             setUserInfo(user);
+            setLoading(false);
           }
         });
       }
@@ -101,6 +106,7 @@ function App() {
         title="Farly Post"
         padding="xl"
         size="full"
+        style={{ position: 'relative' }}
         styles={{
           title: {
             fontSize: 36,
@@ -111,21 +117,26 @@ function App() {
           },
         }}
       >
+        <LoadingOverlay visible={loading} />
         {editing && <Form onPreviousClick={goBack} userInfo={userInfo as UserInfo} onSaveSuccess={goBack} />}
         {!editing && (
           <Box sx={{ display: 'flex' }}>
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
-              <Box sx={{ maxWidth: 900, width: '100%', textAlign: 'left' }}>
-                <TypographyStylesProvider>
-                  <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: postInfo[contentIndex].content }} />
-                </TypographyStylesProvider>
-              </Box>
+              {postInfo && postInfo.length > 0 && (
+                <Box sx={{ maxWidth: 900, width: '100%', textAlign: 'left' }}>
+                  <TypographyStylesProvider>
+                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: activedContent }} />
+                  </TypographyStylesProvider>
+                </Box>
+              )}
             </Box>
-            <PostList
-              data={postInfo}
-              onItemSelected={(index) => setContentIndex(Number(index))}
-              triggerEditChange={goToEditProfile}
-            />
+            {postInfo && (
+              <PostList
+                data={postInfo}
+                onItemSelected={(index) => setActivedContent(postInfo[Number(index)]?.content)}
+                triggerEditChange={goToEditProfile}
+              />
+            )}
             {/* <Web3RichTextEditor content={activedContent} /> */}
           </Box>
         )}

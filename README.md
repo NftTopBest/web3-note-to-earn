@@ -1,3 +1,4 @@
+<img src="./screenshot.png" />
 
 # make note on any webpage(current only support twitter), and can be an note to earn dapp
 

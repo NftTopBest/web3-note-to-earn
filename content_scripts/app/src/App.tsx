@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   Drawer,
   Button,
@@ -17,11 +17,14 @@ import {
 import { Books, Edit, ThumbUp } from 'tabler-icons-react';
 import dayjs from 'dayjs';
 import { useClickOutside } from '@mantine/hooks';
-import Form from './components/Form';
+import Form, { PostInfoProps } from './components/Form';
 import PostList from './components/PostList';
 import { useSubpaseContext } from './provider/SubpaseProvider';
 import { showNotification } from '@mantine/notifications';
 import './App.css';
+import { getPosts } from './service/submarine';
+import axios from 'axios';
+import { useWallet } from './provider/WalletProvider';
 
 export type UserInfo = {
   id: number;
@@ -36,9 +39,10 @@ export type PostInfo = {
   view: number;
   author: string;
   excerpt: string;
+  address: string;
   content: string;
   email: string | null;
-  tags: string | null;
+  tags: string[];
   title: string;
   isPublic: true;
   created_at?: string;
@@ -58,7 +62,8 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
 function App() {
-  const { getUserPost, getAllPosts } = useSubpaseContext();
+  const { getPostList } = useSubpaseContext();
+  const { setAccount } = useWallet();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -79,22 +84,36 @@ function App() {
     setEditing(true);
   };
 
-  const executeQueryUserPost = async (account?: string) => {
+  const metadataFilter = {
+    keyvalues: {
+      type: {
+        value: 'note',
+        op: 'eq',
+      },
+    },
+  };
+
+  const filters = {
+    status: 'pinned',
+    pageLimit: 10,
+    pageOffset: 0,
+    metadata: metadataFilter,
+  };
+
+  const executeQueryUserPost = async () => {
     setLoading(true);
     loadingNotification();
-    const post: any[] = await getUserPost(account ?? userInfo?.address);
-    // TODO - 增加排序功能已替换前端的 reverse
-    setPostInfo(post.reverse());
+    const blogPosts = await getPostList(filters);
+    setPostInfo(blogPosts);
+
     setLoading(false);
   };
 
   const executeQueryAllPost = async () => {
     setLoading(true);
     loadingNotification();
-    const post: any[] = await getAllPosts(userInfo?.address);
-
-    // TODO - 增加排序功能已替换前端的 reverse
-    setPostInfo(post.reverse());
+    const blogPosts = await getPostList(filters);
+    setPostInfo(blogPosts);
     setLoading(false);
   };
 
@@ -126,7 +145,7 @@ function App() {
         ...prev,
         address: account,
       }));
-      executeQueryUserPost(account);
+      executeQueryUserPost();
     }
   }, []);
 
@@ -136,9 +155,10 @@ function App() {
         res.onMessage.addListener(async (user: UserInfo) => {
           console.log('🥓: popup.js receive', user);
           if (user && user?.address) {
-            executeQueryUserPost(user.address);
+            executeQueryUserPost();
             setUserInfo(user);
             setLoading(false);
+            setAccount(user.address)
           }
         });
       }
@@ -196,7 +216,7 @@ function App() {
                   <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 24 }}>
                     <Box sx={{ flex: 1 }}>
                       {postInfo[actived].tags &&
-                        postInfo[actived].tags?.split(',').map((tag, index) => (
+                        postInfo[actived].tags.map((tag, index) => (
                           <Badge key={index} size="xs" color="green" sx={{ marginRight: 8 }}>
                             {tag}
                           </Badge>

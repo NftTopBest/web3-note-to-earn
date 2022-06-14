@@ -1,5 +1,5 @@
 // Components
-import { Box, Card } from '@mantine/core';
+import { Box } from '@mantine/core';
 import { PostInfo } from '../../App';
 import { noop } from '../../utils/functionality';
 import Item from './Item';

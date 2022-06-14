@@ -143,6 +143,8 @@ const WalletProvider = React.memo(({ children }) => {
         connectWallet,
         isAuthenticated,
         appLoading,
+        setAccount,
+        account
       }}
     >
       {children}

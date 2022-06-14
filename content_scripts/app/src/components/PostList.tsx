@@ -24,7 +24,7 @@ function PostList({
     <Box
       sx={{
         marginLeft: 84,
-        maxWidth: 400,
+        maxWidth: 440,
         display: 'flex',
         height: '100%',
         flexDirection: 'column',
@@ -33,7 +33,7 @@ function PostList({
     >
       <Tabs
         styles={{
-          body: { height: '100%' },
+          body: { height: '100%', width: "100%" },
           tabInner: { fontSize: 24, fontWeight: 600 },
           tabsListWrapper: { marginBottom: 12 },
         }}

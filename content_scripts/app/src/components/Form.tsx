@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 // Components
-import { Button, Group, Box, Textarea, MultiSelect, TextInput, Switch } from '@mantine/core';
+import { Button, Group, Box, Textarea, MultiSelect, TextInput, Switch, LoadingOverlay } from '@mantine/core';
 import { RichTextEditor } from '@mantine/rte';
 // Hooks
 import { useForm, zodResolver } from '@mantine/form';
@@ -9,6 +9,19 @@ import { z } from 'zod';
 import { UserInfo } from '../App';
 import { useSubpaseContext } from '../provider/SubpaseProvider';
 import { noop } from '../utils/functionality';
+import { showNotification } from '@mantine/notifications';
+import { useWallet } from '../provider/WalletProvider';
+
+export type PostInfoProps = {
+  age: number;
+  tags: string[];
+  email: string;
+  title: string;
+  excerpt: string;
+  content: string;
+  isPublic: boolean;
+  address: string;
+};
 
 const data = [
   { value: 'NFT', label: 'NFT' },
@@ -36,9 +49,11 @@ type FormProps = {
 
 function Form(props: FormProps) {
   const { onPreviousClick, userInfo, onSaveSuccess = noop } = props;
+  const { account } = useWallet();
   const [isPublic, setIsPublic] = useState(true);
-  const { save } = useSubpaseContext();
+  const [loading, setLoading] = useState(false);
   const [value, onChange] = useState('<p>Type @ or # to see mentions autocomplete</p>');
+  const { createPost } = useSubpaseContext();
 
   const form = useForm({
     schema: zodResolver(schema),
@@ -54,20 +69,33 @@ function Form(props: FormProps) {
   });
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
+    setLoading(true);
     event.preventDefault();
-    const error = await save({
-      ...form.values,
-      content: value,
-      author: userInfo?.address,
-      tags: form.values.tags.join(','),
+    showNotification({
+      id: 'submitting',
+      disallowClose: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 2000,
+      title: 'Submitting',
+      message: 'Uploading your post...',
+      loading,
     });
-
-    console.log("error ", error);
-
-    if (!error) {
-      onSaveSuccess();
-    }
-
+    await createPost({
+      pinataContent: {
+        account,
+        ...form.values,
+        content: value,
+        author: userInfo?.address,
+      },
+      pinataMetadata: {
+        keyvalues: {
+          type: 'note',
+        },
+      },
+    });
+    setLoading(false);
+    onSaveSuccess();
   };
 
   useEffect(() => {
@@ -76,6 +104,7 @@ function Form(props: FormProps) {
 
   return (
     <Box sx={{ width: '90%', marginTop: '48px', maxWidth: 900 }} mx="auto">
+      <LoadingOverlay visible={loading} />
       <form onSubmit={handleSubmit}>
         <TextInput required label="Title" placeholder="Please input your title here" {...form.getInputProps('title')} />
         <Textarea

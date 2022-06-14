@@ -1,5 +1,7 @@
 import { createContext, ReactNode, useContext, useState } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import queryBuilder from '../utils/querybuilder';
+import axios from 'axios';
 
 const supabaseUrl = 'https://tsjhotxjoptpsjagggbu.supabase.co';
 const supabaseKey =
@@ -32,6 +34,12 @@ const AppContext = createContext({});
 
 type SubpaseProviderProps = { children: ReactNode | JSX.Element };
 
+type PostInfoParams = {
+  title: string;
+  excerpt: string;
+  content: string;
+};
+
 const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
   const supabase = createClient(supabaseUrl, supabaseKey, options);
 
@@ -39,6 +47,46 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
   const [messages, setMessages] = useState([]);
   const [error, setError] = useState('');
   const [loadingInitial, setLoadingInitial] = useState(true);
+
+  const createPost = async (postInfo: PostInfoParams) => {
+    // TODO: content with lit sdk
+    const baseUrl = 'https://api.pinata.cloud';
+    const endpoint = `${baseUrl}/pinning/pinJSONToIPFS`;
+    const rz = await axios.post(endpoint, postInfo, {
+      withCredentials: true,
+      headers: {
+        pinata_api_key: '289f4a4ede7a9479505b',
+        pinata_secret_api_key: '4610953acd443e9e90fe153bb09b4096f8f1082b9a0032e77db84930fe0306c7',
+      },
+    });
+
+    console.log('====> rz :', rz);
+  };
+
+  const getPostList = async (filters: any) => {
+    const baseUrl = 'https://api.pinata.cloud';
+    const baseEndpoint = `${baseUrl}/data/pinList`;
+    const endpoint = queryBuilder(baseEndpoint, filters);
+    const result = await axios.get(endpoint, {
+      withCredentials: true,
+      headers: {
+        pinata_api_key: '289f4a4ede7a9479505b',
+        pinata_secret_api_key: '4610953acd443e9e90fe153bb09b4096f8f1082b9a0032e77db84930fe0306c7',
+      },
+    });
+    if (result.status !== 200) {
+      new Error(`unknown server response while attempting to retrieve user pin list: ${result}`);
+    }
+    const hashList = result?.data?.rows.map(({ ipfs_pin_hash }: { ipfs_pin_hash: string }) => ipfs_pin_hash);
+    const requestArr = hashList.map(async (id: string) => {
+      const rz = await axios.get(`https://gateway.pinata.cloud/ipfs/${id}`);
+      return {
+        id,
+        ...rz.data,
+      };
+    });
+    return await Promise.all(requestArr);
+  };
 
   const save = async (formData: any) => {
     setLoadingInitial(true);
@@ -52,19 +100,14 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
 
   const getUserPost = async (account: string) => {
     // TODO 错误处理
-    const { data, error } = await supabase
-      .from('post')
-      .select(SELECT_POSTS)
-      .eq('author', account);
+    const { data, error } = await supabase.from('post').select(SELECT_POSTS).eq('author', account);
 
     return data;
   };
 
   const getAllPosts = async (account: string) => {
     // TODO 错误处理
-    const { data, error } = await supabase
-      .from('post')
-      .select(SELECT_POSTS)
+    const { data, error } = await supabase.from('post').select(SELECT_POSTS);
     return data;
   };
 
@@ -81,6 +124,8 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
         setUsername,
         getUserPost,
         getAllPosts,
+        createPost,
+        getPostList,
       }}
     >
       {children}

@@ -1,6 +1,5 @@
 // Lib components
-import { Box, Button, Card, ScrollArea, Tabs, TabsProps } from '@mantine/core';
-import { Photo, MessageCircle, Settings } from 'tabler-icons-react';
+import { Box, Button, Card, ScrollArea, Skeleton, Tabs } from '@mantine/core';
 import { PostInfo } from '../App';
 import { noop } from '../utils/functionality';
 // Components
@@ -8,17 +7,24 @@ import List from './List';
 
 type PostListProps = {
   data: PostInfo[];
-  onItemSelected?: (key: string | number) => void;
+  loading: boolean;
   triggerEditChange?: () => void;
+  onItemSelected?: (key: string | number) => void;
+  onTabSelected?: (index: number) => void;
 };
 
-function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: PostListProps) {
-
+function PostList({
+  loading,
+  data,
+  onTabSelected = noop,
+  onItemSelected = noop,
+  triggerEditChange = noop,
+}: PostListProps) {
   return (
     <Box
       sx={{
-        marginLeft: 24,
-        maxWidth: 500,
+        marginLeft: 84,
+        maxWidth: 400,
         display: 'flex',
         height: '100%',
         flexDirection: 'column',
@@ -29,20 +35,25 @@ function PostList({ data, onItemSelected = noop, triggerEditChange = noop }: Pos
         styles={{
           body: { height: '100%' },
           tabInner: { fontSize: 24, fontWeight: 600 },
-          tabsListWrapper: { marginBottom: 12 }
+          tabsListWrapper: { marginBottom: 12 },
         }}
+        onTabChange={(index) => onTabSelected(index)}
       >
         <Tabs.Tab sx={{ height: '100%' }} label="ALL">
           <ScrollArea style={{ width: '100%', height: 900, borderRadius: 8 }}>
-            <Card shadow="xl" sx={{ width: '100%', minHeight: "100%" }} mx="auto">
-              <List list={data} onItemSelected={onItemSelected} />
+            <Card shadow="xl" p={0} sx={{ width: '100%', minHeight: '100%' }} mx="auto">
+              <Skeleton visible={loading}>
+                <List list={data} onItemSelected={onItemSelected} />
+              </Skeleton>
             </Card>
           </ScrollArea>
         </Tabs.Tab>
-        <Tabs.Tab sx={{ height: '100%' }} label="MY" >
-          <ScrollArea style={{ width: '100%', height: 800, borderRadius: 8 }}>
-            <Card shadow="xl" sx={{ width: '100%', minHeight: "100%" }} mx="auto">
-              <List list={data} onItemSelected={onItemSelected} />
+        <Tabs.Tab sx={{ height: '100%' }} label="MY">
+          <ScrollArea style={{ width: '100%', height: 900, borderRadius: 8 }}>
+            <Card shadow="xl" p={0} sx={{ width: '100%', minHeight: '100%' }} mx="auto">
+              <Skeleton visible={loading}>
+                <List list={data} onItemSelected={onItemSelected} />
+              </Skeleton>
             </Card>
           </ScrollArea>
         </Tabs.Tab>

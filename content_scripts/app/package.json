@@ -9,11 +9,12 @@
     "build": "yarn react-app-rewired build"
   },
   "dependencies": {
-    "@mantine/core": "^4.2.8",
+    "@mantine/core": "^4.2.9",
     "@mantine/dropzone": "^4.2.8",
     "@mantine/form": "^4.2.8",
-    "@mantine/hooks": "^4.2.8",
+    "@mantine/hooks": "^4.2.9",
     "@mantine/next": "^4.2.8",
+    "@mantine/notifications": "^4.2.9",
     "@mantine/rte": "^4.2.8",
     "@supabase/supabase-js": "^1.35.3",
     "@testing-library/jest-dom": "^5.14.1",

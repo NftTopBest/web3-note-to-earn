@@ -26,16 +26,14 @@ function Item(props: ListItemProps) {
         'display': 'flex',
         'width': '100%',
         'boxSizing': 'border-box',
+        'padding': 18,
         '&:hover': { backgroundColor: '#33353dc2' },
       }}
-      p={18}
-      px={4}
     >
       <Box sx={{ marginRight: '24px' }}>
         <Group position="center">
-          <Avatar size="xl" src={defaultAvatar} />
+          <Avatar size="md" src={defaultAvatar} />
         </Group>
-
       </Box>
       <Box>
         <Box>
@@ -43,13 +41,9 @@ function Item(props: ListItemProps) {
           <Text size="sm">{excerpt}</Text>
         </Box>
         <Box mt={12}>
-          {tags &&
-            tags.split(',').map((tag, index) => (
-              <Badge key={index} size="xs" color="green" sx={{ marginRight: 8 }}>
-                {tag}
-              </Badge>
-            ))}
-              <Text sx={{ marginTop: 12 }}>{dayjs().to(dayjs(updated_at))}</Text>
+          <Text size="xs" color="#6e6e6e" sx={{ marginTop: 12 }}>
+            {dayjs().to(dayjs(updated_at))}
+          </Text>
         </Box>
       </Box>
     </Box>

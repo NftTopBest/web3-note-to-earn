@@ -39,13 +39,17 @@ const App: FC = () => {
       }}
     >
       <Blockquote cite="– Web3 S.H.E.I.L.D">Welcom to branch new web3 social</Blockquote>
-      <Box sx={{ display: 'flex', width: '50%', alignItems: 'center', flexDirection: "column" }}>
-        <Title order={4} sx={{ color: "#fff", marginBottom: 16 }}>
-          Your account
-        </Title>
-        {isAuthenticated && <Text size="xs" color="#fff">
-          {account}
-        </Text>}
+      <Box sx={{ display: 'flex', width: '50%', alignItems: 'center', flexDirection: 'column' }}>
+        {isAuthenticated && (
+          <>
+            <Title order={4} sx={{ color: '#fff', marginBottom: 16 }}>
+              Your account
+            </Title>
+            <Text size="xs" color="#fff">
+              {account}
+            </Text>
+          </>
+        )}
       </Box>
       <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', marginTop: '36px' }}>
         <Button onClick={clickToConnect}>{isAuthenticated ? 'Disconnect' : 'Connect'}</Button>

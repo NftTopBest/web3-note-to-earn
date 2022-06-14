@@ -13,6 +13,21 @@ const options = {
   detectSessionInUrl: true,
 };
 
+const SELECT_POSTS = `
+  age, 
+  tags, 
+  view, 
+  email,
+  thumb,
+  title, 
+  author,
+  excerpt, 
+  content,
+  isPublic, 
+  updated_at,
+  created_at
+`;
+
 const AppContext = createContext({});
 
 type SubpaseProviderProps = { children: ReactNode | JSX.Element };
@@ -39,13 +54,17 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
     // TODO 错误处理
     const { data, error } = await supabase
       .from('post')
-      .select(
-        `
-    title, content, tags, thumb, view, author, isPublic, excerpt, age, email, updated_at, created_at
-  `,
-      )
+      .select(SELECT_POSTS)
       .eq('author', account);
 
+    return data;
+  };
+
+  const getAllPosts = async (account: string) => {
+    // TODO 错误处理
+    const { data, error } = await supabase
+      .from('post')
+      .select(SELECT_POSTS)
     return data;
   };
 
@@ -61,6 +80,7 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
         username,
         setUsername,
         getUserPost,
+        getAllPosts,
       }}
     >
       {children}

@@ -7,7 +7,7 @@ import './bla.scss';
 import WalletProvider from './provider/WalletProvider';
 import { SubpaseProvider } from './provider/SubpaseProvider';
 import { MantineProvider } from '@mantine/core';
-import { darkMode } from './style/theme';
+import { NotificationsProvider } from '@mantine/notifications';
 
 createRoot(document.getElementById('content-script-root')!).render(
   <React.StrictMode>
@@ -26,7 +26,7 @@ createRoot(document.getElementById('content-script-root')!).render(
                 '#2A00FF',
                 '#2200CC',
                 '#190099',
-                '#110066',
+                '#000000',
                 '#7B61FF',
               ],
             },
@@ -35,7 +35,9 @@ createRoot(document.getElementById('content-script-root')!).render(
           }}
           withNormalizeCSS
         >
-          <App />
+          <NotificationsProvider>
+            <App />
+          </NotificationsProvider>
         </MantineProvider>
       </SubpaseProvider>
     </WalletProvider>

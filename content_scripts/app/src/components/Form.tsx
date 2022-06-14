@@ -11,13 +11,11 @@ import { useSubpaseContext } from '../provider/SubpaseProvider';
 import { noop } from '../utils/functionality';
 
 const data = [
-  { value: 'react', label: 'React' },
-  { value: 'ng', label: 'Angular' },
-  { value: 'svelte', label: 'Svelte' },
-  { value: 'vue', label: 'Vue' },
-  { value: 'riot', label: 'Riot' },
-  { value: 'next', label: 'Next.js' },
-  { value: 'blitz', label: 'Blitz.js' },
+  { value: 'NFT', label: 'NFT' },
+  { value: 'Developer', label: 'Developer' },
+  { value: 'Metaverse', label: 'Metaverse' },
+  { value: 'Defi', label: 'Defi' },
+  { value: 'GameFi', label: 'GameFi' },
 ];
 
 const schema = z.object({
@@ -57,14 +55,19 @@ function Form(props: FormProps) {
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
-    const error = save({
+    const error = await save({
       ...form.values,
       content: value,
       author: userInfo?.address,
       tags: form.values.tags.join(','),
     });
 
-    onSaveSuccess();
+    console.log("error ", error);
+
+    if (!error) {
+      onSaveSuccess();
+    }
+
   };
 
   useEffect(() => {

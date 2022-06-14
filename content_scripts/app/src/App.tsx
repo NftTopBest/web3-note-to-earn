@@ -12,6 +12,7 @@ import {
   Divider,
   Group,
   ActionIcon,
+  Notification,
 } from '@mantine/core';
 import { Books, Edit, ThumbUp } from 'tabler-icons-react';
 import dayjs from 'dayjs';
@@ -19,6 +20,7 @@ import { useClickOutside } from '@mantine/hooks';
 import Form from './components/Form';
 import PostList from './components/PostList';
 import { useSubpaseContext } from './provider/SubpaseProvider';
+import { showNotification } from '@mantine/notifications';
 import './App.css';
 
 export type UserInfo = {
@@ -56,7 +58,7 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
 function App() {
-  const { getUserPost } = useSubpaseContext();
+  const { getUserPost, getAllPosts } = useSubpaseContext();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -64,38 +66,67 @@ function App() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
   const [actived, setActived] = useState(0);
+  const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
+  const account = localStorage.getItem('account') ?? '';
 
   const goBack = async () => {
     setEditing(false);
+    executeQueryUserPost();
   };
 
   const goToEditProfile = () => {
     setEditing(true);
   };
 
-
-  const executeQueryPost = async (account?: string) => {
+  const executeQueryUserPost = async (account?: string) => {
     setLoading(true);
+    loadingNotification();
     const post: any[] = await getUserPost(account ?? userInfo?.address);
     // TODO - 增加排序功能已替换前端的 reverse
     setPostInfo(post.reverse());
     setLoading(false);
-  }
+  };
 
+  const executeQueryAllPost = async () => {
+    setLoading(true);
+    loadingNotification();
+    const post: any[] = await getAllPosts(userInfo?.address);
+
+    // TODO - 增加排序功能已替换前端的 reverse
+    setPostInfo(post.reverse());
+    setLoading(false);
+  };
+
+  const clickTabHandler = (index: number) => {
+    setActivedTab(index);
+    if (index === 0) {
+      executeQueryUserPost();
+    } else if (index === 1) {
+      executeQueryAllPost();
+    }
+  };
+
+  const loadingNotification = () => {
+    showNotification({
+      id: 'fetch-loading',
+      disallowClose: true,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
+      autoClose: 2000,
+      title: 'Fetching',
+      message: 'Leave the building immediately',
+      loading,
+    });
+  };
 
   useEffect(() => {
-    if (!editing) executeQueryPost();
-  }, [editing]);
-
-  useEffect(() => {
-    const account = localStorage.getItem('account') ?? '';
     if (account) {
       setUserInfo((prev) => ({
         ...prev,
         address: account,
       }));
-      executeQueryPost(account);
+      executeQueryUserPost(account);
     }
   }, []);
 
@@ -105,8 +136,7 @@ function App() {
         res.onMessage.addListener(async (user: UserInfo) => {
           console.log('🥓: popup.js receive', user);
           if (user && user?.address) {
-
-            executeQueryPost(user.address);
+            executeQueryUserPost(user.address);
             setUserInfo(user);
             setLoading(false);
           }
@@ -140,16 +170,16 @@ function App() {
           },
         }}
       >
-        <LoadingOverlay visible={loading} />
+        {/* <LoadingOverlay visible={loading} /> */}
         {editing && <Form onPreviousClick={goBack} userInfo={userInfo as UserInfo} onSaveSuccess={goBack} />}
         {!editing && (
-          <Box sx={{ display: 'flex', marginTop: '36px' }}>
+          <Box sx={{ display: 'flex' }} m={36}>
             <Box sx={{ flex: 1, display: 'flex', justifyContent: 'flex-end' }}>
               {postInfo && postInfo.length > 0 && (
                 <Box sx={{ maxWidth: 900, width: '100%', textAlign: 'left' }}>
                   <Box sx={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between' }}>
                     <Box>
-                      <Title sx={{ color: '#76DBA1' }}>{postInfo[actived].title}</Title>
+                      <Title sx={{ color: '#afc3e1' }}>{postInfo[actived].title}</Title>
                       <Text sx={{ marginTop: 12, color: '#86909c', fontSize: 22 }}>{postInfo[actived].excerpt}</Text>
                     </Box>
                     <Box>
@@ -163,17 +193,27 @@ function App() {
                       </Box>
                     </Box>
                   </Box>
+                  <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 24 }}>
+                    <Box sx={{ flex: 1 }}>
+                      {postInfo[actived].tags &&
+                        postInfo[actived].tags?.split(',').map((tag, index) => (
+                          <Badge key={index} size="xs" color="green" sx={{ marginRight: 8 }}>
+                            {tag}
+                          </Badge>
+                        ))}
+                    </Box>
+                    <Group>
+                      <ActionIcon>
+                        <ThumbUp size={20} />
+                      </ActionIcon>
+                      <Text sx={{ fontWeight: 400 }}>{postInfo[actived].thumb}</Text>
+                      <ActionIcon>
+                        <Books size={20} />
+                      </ActionIcon>
+                      <Text sx={{ fontWeight: 400 }}>{postInfo[actived].view}</Text>
+                    </Group>
+                  </Box>
 
-                  <Group sx={{ width: '100%', display: 'flex', justifyContent: 'flex-end', marginTop: 24 }}>
-                    <ActionIcon>
-                      <ThumbUp size={20} />
-                    </ActionIcon>
-                    <Text sx={{ fontWeight: 400 }}>123</Text>
-                    <ActionIcon>
-                      <Books size={20} />
-                    </ActionIcon>
-                    <Text sx={{ fontWeight: 400 }}>123</Text>
-                  </Group>
                   <Divider size="lg" sx={{ margin: '24px auto' }} />
                   <TypographyStylesProvider>
                     <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: postInfo[actived].content }} />
@@ -184,11 +224,12 @@ function App() {
             {postInfo && (
               <PostList
                 data={postInfo}
+                loading={loading}
+                onTabSelected={clickTabHandler}
                 onItemSelected={(index) => setActived(Number(index))}
                 triggerEditChange={goToEditProfile}
               />
             )}
-            {/* <Web3RichTextEditor content={activedContent} /> */}
           </Box>
         )}
       </Drawer>

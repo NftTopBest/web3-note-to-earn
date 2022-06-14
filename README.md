@@ -25,3 +25,10 @@ such as:
 1. 某个特定的钱包地址可以解密（比如用户自己本身）
 2. 拥有某个 NFT 的用户可以解密（这样笔记作者可以以某个主题发布 NFT，只有买了此 NFT 的用户才能看笔记内容）
 3. 用户也可以按月付费订购专栏（token 自动按月支付）
+
+# Tech
+
+* note content save on IPFS (via Pinata SDK)
+* content ACL by LIT
+* react
+* chrome extension tech

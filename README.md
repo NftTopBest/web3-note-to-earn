@@ -1,3 +1,4 @@
+<img src="./screenshot.png" />
 
 # make note on any webpage(current only support twitter), and can be an note to earn dapp
 
@@ -28,3 +29,9 @@ You can access <https://www.loom.com/share/760c4d4a7efe409b9b35dd0b87f39ba8> her
 3. 用户也可以按月付费订购专栏（token 自动按月支付）
 
 您也可以访问此链接 <https://www.loom.com/share/760c4d4a7efe409b9b35dd0b87f39ba8> 查看应用程序功能
+# Tech
+
+* note content save on IPFS (via Pinata SDK)
+* content ACL by LIT
+* react
+* chrome extension tech

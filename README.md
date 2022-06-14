@@ -12,6 +12,8 @@ such as:
 2. some one have some kind of NFT can decode, so user can public some nft for reader to mint
 3. user can subscribe that can pay for the content monthly
 
+You can access <https://www.loom.com/share/760c4d4a7efe409b9b35dd0b87f39ba8> here too see the App feature
+
 # 在任意网页都可以添加自己的笔记内容，并且可以变成赚钱渠道
 
 * GitHub <https://github.com/NftTopBest/web3-note-to-earn>
@@ -24,3 +26,5 @@ such as:
 1. 某个特定的钱包地址可以解密（比如用户自己本身）
 2. 拥有某个 NFT 的用户可以解密（这样笔记作者可以以某个主题发布 NFT，只有买了此 NFT 的用户才能看笔记内容）
 3. 用户也可以按月付费订购专栏（token 自动按月支付）
+
+您也可以访问此链接 <https://www.loom.com/share/760c4d4a7efe409b9b35dd0b87f39ba8> 查看应用程序功能

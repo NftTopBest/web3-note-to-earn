@@ -62,11 +62,8 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
-const handlerDecrypt = async (post: any, callback: (encryptedSymmetricKey: string, encryptedString: string) => any) => {
-  const {
-    content: { encryptedString = '', encryptedSymmetricKey = '' },
-  } = post;
-  const { decryptedString, err } = await callback(encryptedSymmetricKey, encryptedString);
+const handlerDecrypt = async (post: any, callback: (encryptedSymmetricKey: string, encrypedString: string) => any) => {
+  const { decryptedString, err } = await callback(post?.content?.encryptedSymmetricKey, post?.content?.encryptedString);
 
   if (err) {
     console.log('====> err :', err);

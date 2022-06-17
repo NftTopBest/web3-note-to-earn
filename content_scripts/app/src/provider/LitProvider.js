@@ -1,11 +1,10 @@
-import React from 'react';
 import LitJsSdk from 'lit-js-sdk';
 import { createContext, useRef, useContext } from 'react';
-import { blobToDataURL, dataURLtoBlob } from '../utils/blob';
+import { dataURLtoBlob } from '../utils/blob';
 import { useSubpaseContext } from './SubpaseProvider';
 
 export const LitContext = createContext();
-export const useLit = () => useContext(LitContext);
+export const  useLit = () => useContext(LitContext);
 
 const chain = 'rinkeby';
 const nftAddress = '0x17f6bdf57384fd9f24f1d9a4681c3a9dc839d79e';
@@ -40,7 +39,6 @@ export const LitProvider = ({ children }) => {
 
   const encryptPost = async (postInfo) => {
     console.log("postInfo ", postInfo)
-    console.log('authSig ', authSig);
 
     const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
     console.log('authSig ', authSig);

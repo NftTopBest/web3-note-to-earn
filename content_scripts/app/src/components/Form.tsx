@@ -72,14 +72,14 @@ function Form(props: FormProps) {
     setLoading(true);
     event.preventDefault();
     showNotification({
-      id: 'submitting',
-      disallowClose: true,
-      onClose: () => console.log('unmounted'),
-      onOpen: () => console.log('mounted'),
+      loading,
       autoClose: 2000,
+      disallowClose: true,
+      id: 'submitting',
       title: 'Submitting',
       message: 'Uploading your post...',
-      loading,
+      onClose: () => console.log('unmounted'),
+      onOpen: () => console.log('mounted'),
     });
     await encryptPost({
       account,

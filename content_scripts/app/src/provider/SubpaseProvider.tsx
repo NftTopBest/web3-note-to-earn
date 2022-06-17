@@ -49,7 +49,6 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   const createPost = async (postInfo: PostInfoParams) => {
-    // TODO: content with lit sdk
     const baseUrl = 'https://api.pinata.cloud';
     const endpoint = `${baseUrl}/pinning/pinJSONToIPFS`;
     const rz = await axios.post(endpoint, postInfo, {

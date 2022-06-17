@@ -25,6 +25,7 @@ import './App.css';
 import { getPosts } from './service/submarine';
 import axios from 'axios';
 import { useWallet } from './provider/WalletProvider';
+import { useLit } from './provider/LitProvider';
 
 export type UserInfo = {
   id: number;
@@ -61,6 +62,23 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
+const handlerDecrypt = async (post: any, callback: (encryptedSymmetricKey: string, encryptedString: string) => any) => {
+  const {
+    content: { encryptedString = '', encryptedSymmetricKey = '' },
+  } = post;
+  const { decryptedString, err } = await callback(encryptedSymmetricKey, encryptedString);
+
+  if (err) {
+    console.log('====> err :', err);
+    return;
+  }
+
+  return {
+    ...post,
+    content: decryptedString,
+  };
+};
+
 function App() {
   const { getPostList } = useSubpaseContext();
   const { setAccount } = useWallet();
@@ -71,6 +89,7 @@ function App() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
   const [actived, setActived] = useState(0);
+  const { install, decryptContent } = useLit();
   const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
   const account = localStorage.getItem('account') ?? '';
@@ -103,16 +122,17 @@ function App() {
   const executeQueryUserPost = async () => {
     setLoading(true);
     loadingNotification();
-    const blogPosts = await getPostList(filters);
+    const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
+    console.log('blogPosts ', blogPosts);
     setPostInfo(blogPosts);
-
     setLoading(false);
   };
 
   const executeQueryAllPost = async () => {
     setLoading(true);
     loadingNotification();
-    const blogPosts = await getPostList(filters);
+    const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
+    console.log('blogPosts ', blogPosts);
     setPostInfo(blogPosts);
     setLoading(false);
   };
@@ -150,6 +170,8 @@ function App() {
   }, []);
 
   useEffect(() => {
+    install();
+
     const listenerHandler = (res: any) => {
       if (res.name === 'popup') {
         res.onMessage.addListener(async (user: UserInfo) => {
@@ -158,7 +180,7 @@ function App() {
             executeQueryUserPost();
             setUserInfo(user);
             setLoading(false);
-            setAccount(user.address)
+            setAccount(user.address);
           }
         });
       }

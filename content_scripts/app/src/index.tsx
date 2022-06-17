@@ -8,37 +8,40 @@ import WalletProvider from './provider/WalletProvider';
 import { SubpaseProvider } from './provider/SubpaseProvider';
 import { MantineProvider } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
+import { LitProvider } from './provider/LitProvider';
 
 createRoot(document.getElementById('content-script-root')!).render(
   <React.StrictMode>
     <WalletProvider>
       <SubpaseProvider>
-        <MantineProvider
-          theme={{
-            colorScheme: 'dark',
-            colors: {
-              brand: [
-                '#EAE5FF',
-                '#C3B8FF',
-                '#9D8AFF',
-                '#775CFF',
-                '#866ffa',
-                '#2A00FF',
-                '#2200CC',
-                '#190099',
-                '#000000',
-                '#7B61FF',
-              ],
-            },
-            primaryShade: 3,
-            primaryColor: 'brand',
-          }}
-          withNormalizeCSS
-        >
-          <NotificationsProvider>
-            <App />
-          </NotificationsProvider>
-        </MantineProvider>
+        <LitProvider>
+          <MantineProvider
+            theme={{
+              colorScheme: 'dark',
+              colors: {
+                brand: [
+                  '#EAE5FF',
+                  '#C3B8FF',
+                  '#9D8AFF',
+                  '#775CFF',
+                  '#866ffa',
+                  '#2A00FF',
+                  '#2200CC',
+                  '#190099',
+                  '#000000',
+                  '#7B61FF',
+                ],
+              },
+              primaryShade: 3,
+              primaryColor: 'brand',
+            }}
+            withNormalizeCSS
+          >
+            <NotificationsProvider>
+              <App />
+            </NotificationsProvider>
+          </MantineProvider>
+        </LitProvider>
       </SubpaseProvider>
     </WalletProvider>
   </React.StrictMode>,

@@ -7,10 +7,9 @@ import { useForm, zodResolver } from '@mantine/form';
 // utils
 import { z } from 'zod';
 import { UserInfo } from '../App';
+import { useWallet } from '../provider/WalletProvider';
 import { noop } from '../utils/functionality';
 import { showNotification } from '@mantine/notifications';
-import { useWallet } from '../provider/WalletProvider';
-import { useLit } from '../provider/LitProvider';
 
 export type PostInfoProps = {
   age: number;
@@ -52,11 +51,7 @@ function Form(props: FormProps) {
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [value, onChange] = useState('<p>Type @ or # to see mentions autocomplete</p>');
-  const { account, install, encryptPost } = useWallet(); 
-
-  useEffect(() => {
-    install();
-  }, []);
+  const { encryptPost } = useWallet();
 
   const form = useForm({
     schema: zodResolver(schema),

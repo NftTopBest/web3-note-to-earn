@@ -1,10 +1,11 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 import LitJsSdk from 'lit-js-sdk';
 import createMetaMaskProvider from 'metamask-extension-provider';
 import Web3 from 'web3';
 import axios from 'axios';
 import { ethers } from 'ethers';
-import { getNormalizeAddress } from '../utils';
+// utils
+import { getNormalizeAddress, getAuthSig, nftAddress, chain, PINATA_REQUEST_INFO, handlerDecrypt } from '../utils';
 import { EthereumEvents } from '../utils/events';
 import { blobToDataURL, dataURLtoBlob } from '../utils/blob';
 import storage from '../utils/storage';
@@ -20,22 +21,20 @@ export function withWallet(Component) {
   return WalletComponent;
 }
 
-const PINATA_REQUEST_INFO = {
-  withCredentials: true,
-  headers: {
-    pinata_api_key: 'be04bff72a2d069f4971',
-    pinata_secret_api_key: '495565df952a88745dd21c51aa151fc2adb8ffff2795a5eae3efa0f2e3492627',
+const metadataFilter = {
+  keyvalues: {
+    type: {
+      value: 'notes-demo',
+      op: 'eq',
+    },
   },
-}
+};
 
-
-const chain = 'rinkeby';
-const nftAddress = '0x17f6bdf57384fd9f24f1d9a4681c3a9dc839d79e';
-
-const getAuthSig = () => {
-  const lauthSigRaw = localStorage.getItem('lit-auth-signature');
-  const authSig = JSON.parse(lauthSigRaw);
-  return authSig;
+const filters = {
+  status: 'pinned',
+  pageLimit: 10,
+  pageOffset: 0,
+  metadata: metadataFilter,
 };
 
 const WalletProvider = React.memo(({ children }) => {
@@ -45,11 +44,7 @@ const WalletProvider = React.memo(({ children }) => {
   const ehthersRef = useRef();
   const [isAuthenticated, setAuthenticated] = React.useState(false);
   const [appLoading, setAppLoading] = React.useState(false);
-
-  const [username, setUsername] = useState('');
-  const [messages, setMessages] = useState([]);
-  const [error, setError] = useState('');
-  const [loadingInitial, setLoadingInitial] = useState(true);
+  const client = useRef();
 
   const createPost = async (postInfo) => {
     const baseUrl = 'https://api.pinata.cloud';
@@ -77,24 +72,6 @@ const WalletProvider = React.memo(({ children }) => {
     return await Promise.all(requestArr);
   };
 
-  const save = async (formData) => {
-    setLoadingInitial(true);
-    setError(error?.message ?? '');
-    setLoadingInitial(false);
-
-    return error;
-  };
-
-  const client = useRef();
-
-  const install = async () => {
-    console.log('===>>> LIT network is START');
-    const litNodeClient = new LitJsSdk.LitNodeClient();
-    await litNodeClient.connect();
-    client.current = litNodeClient;
-    console.log('===>>> LIT network is DONE!');
-  };
-
   const getCondition = () => {
     return [
       {
@@ -117,10 +94,9 @@ const WalletProvider = React.memo(({ children }) => {
     try {
       await LitJsSdk.signAndSaveAuthMessage({ web3: ehthersRef.current, account, chainId: 4 });
       const authSig = getAuthSig();
+      console.log('authSig ', authSig);
       const { encryptedString, symmetricKey } = await LitJsSdk.encryptString(postInfo.content);
       const accessControlConditions = getCondition(nftAddress);
-      console.log("first")
-
       const encryptedSymmetricKey = await client.current?.saveEncryptionKey({
         accessControlConditions,
         symmetricKey, // Uint8Array
@@ -128,30 +104,24 @@ const WalletProvider = React.memo(({ children }) => {
         chain,
       });
 
-      console.log("encryptedSymmetricKey data ", {
-        accessControlConditions,
-        symmetricKey, // Uint8Array
-        authSig,
-        chain,
+      console.log('encryptedSymmetricKey data ', {
+        encryptedSymmetricKey,
       });
 
-
-      const content = {
-        encryptedString: await blobToDataURL(encryptedString),
-        encryptedSymmetricKey: await LitJsSdk.uint8arrayToString(encryptedSymmetricKey, 'base16'),
-      };
-
-      console.log("content ", content);
-      console.log("postInfo ", postInfo);
+      const encryptedStringString = await blobToDataURL(encryptedString);
+      const encryptedSymmetricKeyString = await LitJsSdk.uint8arrayToString(encryptedSymmetricKey, 'base16');
 
       await createPost({
         pinataContent: {
           ...postInfo,
-          content,
+          content: {
+            encryptedString: encryptedStringString,
+            encryptedSymmetricKey: encryptedSymmetricKeyString,
+          },
         },
         pinataMetadata: {
           keyvalues: {
-            type: 'note',
+            type: 'notes-demo',
           },
         },
       });
@@ -173,14 +143,38 @@ const WalletProvider = React.memo(({ children }) => {
         authSig,
       });
 
-      encryptedString = blobToDataURL(encryptedString);
-      const decryptedString = await LitJsSdk.decryptString(encryptedString, symmetricKey);
+      const newEncryptedString = dataURLtoBlob(encryptedString);
+
+      console.log('newEncryptedString ', newEncryptedString);
+
+      const decryptedString = await LitJsSdk.decryptString(newEncryptedString, symmetricKey);
+
+      console.log('decryptedString ', decryptedString);
 
       return { decryptedString };
     } catch (err) {
-      console.log('====> err :', err) ;
+      console.log('====> err :', err);
       return { err };
     }
+  };
+
+  const getParsePost = async () => {
+    const encryptedPosts = await getPostList(filters);
+
+    return encryptedPosts;
+  };
+
+  const showPost = async (data) => {
+    const post = await handlerDecrypt(data, decryptContent);
+    return post;
+  };
+
+  const install = async () => {
+    console.log('===>>> LIT network is START');
+    const litNodeClient = new LitJsSdk.LitNodeClient();
+    await litNodeClient.connect();
+    client.current = litNodeClient;
+    console.log('===>>> LIT network is DONE!');
   };
 
   React.useEffect(() => {
@@ -195,7 +189,7 @@ const WalletProvider = React.memo(({ children }) => {
     if (provider && provider.on) {
       provider.on(EthereumEvents.CHAIN_CHANGED, handleChainChanged);
       provider.on(EthereumEvents.ACCOUNTS_CHANGED, handleAccountsChanged);
-        provider.on(EthereumEvents.CONNECT, handleConnect);
+      provider.on(EthereumEvents.CONNECT, handleConnect);
       provider.on(EthereumEvents.DISCONNECT, handleDisconnect);
     }
   };
@@ -317,7 +311,8 @@ const WalletProvider = React.memo(({ children }) => {
         setAccount,
         install,
         account,
-        web3,
+        getParsePost,
+        showPost,
       }}
     >
       {children}

@@ -58,20 +58,6 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
-const handlerDecrypt = async (post: any, callback: (encryptedSymmetricKey: string, encrypedString: string) => any) => {
-  const result = await callback(post?.content?.encryptedSymmetricKey, post?.content?.encryptedString);
-
-  if (result?.err) {
-    console.log('====> err :', result?.err);
-    return;
-  }
-
-  return {
-    ...post,
-    content: result?.decryptedString,
-  };
-};
-
 const metadataFilter = {
   keyvalues: {
     type: {
@@ -79,13 +65,6 @@ const metadataFilter = {
       op: 'eq',
     },
   },
-};
-
-const filters = {
-  status: 'pinned',
-  pageLimit: 10,
-  pageOffset: 0,
-  metadata: metadataFilter,
 };
 
 function App() {
@@ -98,42 +77,52 @@ function App() {
   const [actived, setActived] = useState(0);
   const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
-  const accountStorage = localStorage.getItem('account') ?? '';
-  const { isAuthenticated, connectWallet, install, account, setAccount } = useWallet();
+  const { showPost, getParsePost } = useWallet();
+  const [subscribeList, setSubscribeList] = useState<number[]>([]);
 
   const goBack = async () => {
     setEditing(false);
-    // executeQueryUserPost();
+    if (activedTab === 0) {
+      executeQueryAllPost();
+    } else if (activedTab === 1) {
+      executeQueryUserPost();
+    }
   };
+
+  useEffect(() => {
+    executeQueryAllPost();
+  }, []);
 
   const goToEditProfile = () => {
     setEditing(true);
   };
 
-  // const executeQueryUserPost = async () => {
-  //   setLoading(true);
-  //   loadingNotification();
-  //   const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
-  //   console.log('blogPosts ', blogPosts);
-  //   // setPostInfo(blogPosts);
-  //   setLoading(false);
-  // };
+  const executeQueryUserPost = async () => {
+    setLoading(true);
+    loadingNotification();
+    const blogPosts = await getParsePost();
+    setPostInfo(blogPosts);
+    setLoading(false);
+  };
 
   const executeQueryAllPost = async () => {
     setLoading(true);
     loadingNotification();
-    // const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
-    // console.log('blogPosts ', blogPosts);
-    // setPostInfo(blogPosts);
+    const blogPosts = await getParsePost();
+    setPostInfo(blogPosts.filter((item: any) => item.isPublic));
     setLoading(false);
+  };
+
+  const parse = async (data: any) => {
+    return showPost(data);
   };
 
   const clickTabHandler = (index: number) => {
     setActivedTab(index);
     if (index === 0) {
-      // executeQueryUserPost();
-    } else if (index === 1) {
       executeQueryAllPost();
+    } else if (index === 1) {
+      executeQueryUserPost();
     }
   };
 
@@ -150,47 +139,7 @@ function App() {
     });
   };
 
-  useEffect(() => {
-    if (accountStorage) {
-      setUserInfo((prev) => ({
-        ...prev,
-        address: accountStorage,
-      }));
-      // executeQueryUserPost();
-    }
-  }, []);
-
-  useEffect(() => {
-    connectWallet();
-  }, []);
-
-  const clickToConnect = async () => {
-    await connectWallet();
-    // executeQueryUserPost();
-    // setUserInfo(user);
-    setLoading(false);
-    setAccount(accountStorage);
-  };
-
-  // useEffect(() => {
-  //   const listenerHandler = (res: any) => {
-  //     if (res.name === 'popup') {
-  //       res.onMessage.addListener(async (user: UserInfo) => {
-  //         console.log('🥓: popup.js receive', user);
-  //         if (user && user?.address) {
-  //           executeQueryUserPost();
-  //           setUserInfo(user);
-  //           setLoading(false);
-  //           setAccount(user.address);
-  //         }
-  //       });
-  //     }
-  //   };
-  //   // 监听链接
-  //   chrome.runtime?.onConnect.addListener(listenerHandler);
-  // }, []);
-
-  return userInfo?.address ? (
+  return (
     <Box className="App">
       <Drawer
         opened={opened}
@@ -214,9 +163,6 @@ function App() {
           },
         }}
       >
-        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', marginTop: '36px' }}>
-          <Button onClick={clickToConnect}>{isAuthenticated ? 'Disconnect' : 'Connect'}</Button>
-        </Box>
         {/* <LoadingOverlay visible={loading} /> */}
         {editing && <Form onPreviousClick={goBack} userInfo={userInfo as UserInfo} onSaveSuccess={goBack} />}
         {!editing && (
@@ -250,6 +196,25 @@ function App() {
                         ))}
                     </Box>
                     <Group>
+                      {!subscribeList.includes(actived) && (
+                        <Button
+                          variant="light"
+                          sx={{
+                            marginRight: '12px',
+                          }}
+                          onClick={async () => {
+                            const post = await parse(postInfo[actived]);
+                            setPostInfo((prev) => {
+                              const posts = [...prev];
+                              posts[actived] = post;
+                              return posts;
+                            });
+                            setSubscribeList((prev) => [...prev, actived]);
+                          }}
+                        >
+                          Subscribe
+                        </Button>
+                      )}
                       <ActionIcon>
                         <ThumbUp size={20} />
                       </ActionIcon>
@@ -262,9 +227,16 @@ function App() {
                   </Box>
 
                   <Divider size="lg" sx={{ margin: '24px auto' }} />
-                  <TypographyStylesProvider>
-                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: postInfo[actived].content }} />
-                  </TypographyStylesProvider>
+                  {
+                    <TypographyStylesProvider>
+                      <div
+                        style={{ width: '100%' }}
+                        dangerouslySetInnerHTML={{
+                          __html: typeof postInfo[actived].content === 'string' ? postInfo[actived].content : '',
+                        }}
+                      />
+                    </TypographyStylesProvider>
+                  }
                 </Box>
               )}
             </Box>
@@ -313,7 +285,7 @@ function App() {
         </>
       )}
     </Box>
-  ) : null;
+  );
 }
 
 export default App;

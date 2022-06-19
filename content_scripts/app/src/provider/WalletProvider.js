@@ -31,8 +31,6 @@ const PINATA_REQUEST_INFO = {
 
 const chain = 'rinkeby';
 const nftAddress = '0x17f6bdf57384fd9f24f1d9a4681c3a9dc839d79e';
-const baseUrl = 'https://api.pinata.cloud';
-const baseEndpoint = `${baseUrl}/data/pinList`;
 
 const getAuthSig = () => {
   const lauthSigRaw = localStorage.getItem('lit-auth-signature');
@@ -54,11 +52,15 @@ const WalletProvider = React.memo(({ children }) => {
   const [loadingInitial, setLoadingInitial] = useState(true);
 
   const createPost = async (postInfo) => {
-    const rz = await axios.post(baseEndpoint, postInfo, PINATA_REQUEST_INFO);
+    const baseUrl = 'https://api.pinata.cloud';
+    const endpoint = `${baseUrl}/pinning/pinJSONToIPFS`;
+    const rz = await axios.post(endpoint, postInfo, PINATA_REQUEST_INFO);
     console.log('====> rz :', rz);
   };
 
   const getPostList = async (filters) => {
+    const baseUrl = 'https://api.pinata.cloud';
+    const baseEndpoint = `${baseUrl}/data/pinList`;
     const endpoint = queryBuilder(baseEndpoint, filters);
     const result = await axios.get(endpoint, PINATA_REQUEST_INFO);
     if (result.status !== 200) {
@@ -117,13 +119,7 @@ const WalletProvider = React.memo(({ children }) => {
       const authSig = getAuthSig();
       const { encryptedString, symmetricKey } = await LitJsSdk.encryptString(postInfo.content);
       const accessControlConditions = getCondition(nftAddress);
-
-      console.log("log data ", {
-        accessControlConditions,
-        symmetricKey, // Uint8Array
-        authSig,
-        chain,
-      })
+      console.log("first")
 
       const encryptedSymmetricKey = await client.current?.saveEncryptionKey({
         accessControlConditions,
@@ -177,12 +173,12 @@ const WalletProvider = React.memo(({ children }) => {
         authSig,
       });
 
-      encryptedString = dataURLtoBlob(encryptedString);
+      encryptedString = blobToDataURL(encryptedString);
       const decryptedString = await LitJsSdk.decryptString(encryptedString, symmetricKey);
 
       return { decryptedString };
     } catch (err) {
-      console.log('====> err :', err);
+      console.log('====> err :', err) ;
       return { err };
     }
   };
@@ -199,7 +195,7 @@ const WalletProvider = React.memo(({ children }) => {
     if (provider && provider.on) {
       provider.on(EthereumEvents.CHAIN_CHANGED, handleChainChanged);
       provider.on(EthereumEvents.ACCOUNTS_CHANGED, handleAccountsChanged);
-      provider.on(EthereumEvents.CONNECT, handleConnect);
+        provider.on(EthereumEvents.CONNECT, handleConnect);
       provider.on(EthereumEvents.DISCONNECT, handleDisconnect);
     }
   };

@@ -99,7 +99,7 @@ function App() {
   const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
   const accountStorage = localStorage.getItem('account') ?? '';
-  const { isAuthenticated, connectWallet, install, account, setAccount, getPostList, decryptContent } = useWallet();
+  const { isAuthenticated, connectWallet, install, account, setAccount } = useWallet();
 
   const goBack = async () => {
     setEditing(false);

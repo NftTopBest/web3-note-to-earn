@@ -5,14 +5,12 @@ import App from './App';
 
 import './bla.scss';
 import WalletProvider from './provider/WalletProvider';
-import { SubpaseProvider } from './provider/SubpaseProvider';
 import { MantineProvider } from '@mantine/core';
 import { NotificationsProvider } from '@mantine/notifications';
 
 createRoot(document.getElementById('content-script-root')!).render(
   <React.StrictMode>
     <WalletProvider>
-      <SubpaseProvider>
         <MantineProvider
           theme={{
             colorScheme: 'dark',
@@ -39,7 +37,6 @@ createRoot(document.getElementById('content-script-root')!).render(
             <App />
           </NotificationsProvider>
         </MantineProvider>
-      </SubpaseProvider>
     </WalletProvider>
   </React.StrictMode>,
 );

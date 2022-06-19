@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Drawer,
   Button,
@@ -7,24 +7,21 @@ import {
   Badge,
   Transition,
   TypographyStylesProvider,
-  LoadingOverlay,
   Title,
   Divider,
   Group,
   ActionIcon,
-  Notification,
 } from '@mantine/core';
-import { Books, Edit, ThumbUp } from 'tabler-icons-react';
 import dayjs from 'dayjs';
 import { useClickOutside } from '@mantine/hooks';
-import Form, { PostInfoProps } from './components/Form';
-import PostList from './components/PostList';
-import { useSubpaseContext } from './provider/SubpaseProvider';
 import { showNotification } from '@mantine/notifications';
-import './App.css';
-import { getPosts } from './service/submarine';
-import axios from 'axios';
+import { Books, Edit, ThumbUp } from 'tabler-icons-react';
+// components
+import PostList from './components/PostList';
+import Form from './components/Form';
 import { useWallet } from './provider/WalletProvider';
+// CSS
+import './App.css';
 
 export type UserInfo = {
   id: number;
@@ -61,9 +58,16 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
+const metadataFilter = {
+  keyvalues: {
+    type: {
+      value: 'note',
+      op: 'eq',
+    },
+  },
+};
+
 function App() {
-  const { getPostList } = useSubpaseContext();
-  const { setAccount } = useWallet();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -73,56 +77,52 @@ function App() {
   const [actived, setActived] = useState(0);
   const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
-  const account = localStorage.getItem('account') ?? '';
+  const { showPost, getParsePost } = useWallet();
+  const [subscribeList, setSubscribeList] = useState<number[]>([]);
 
   const goBack = async () => {
     setEditing(false);
-    executeQueryUserPost();
+    if (activedTab === 0) {
+      executeQueryAllPost();
+    } else if (activedTab === 1) {
+      executeQueryUserPost();
+    }
   };
+
+  useEffect(() => {
+    executeQueryAllPost();
+  }, []);
 
   const goToEditProfile = () => {
     setEditing(true);
   };
 
-  const metadataFilter = {
-    keyvalues: {
-      type: {
-        value: 'note',
-        op: 'eq',
-      },
-    },
-  };
-
-  const filters = {
-    status: 'pinned',
-    pageLimit: 10,
-    pageOffset: 0,
-    metadata: metadataFilter,
-  };
-
   const executeQueryUserPost = async () => {
     setLoading(true);
     loadingNotification();
-    const blogPosts = await getPostList(filters);
+    const blogPosts = await getParsePost();
     setPostInfo(blogPosts);
-
     setLoading(false);
   };
 
   const executeQueryAllPost = async () => {
     setLoading(true);
     loadingNotification();
-    const blogPosts = await getPostList(filters);
-    setPostInfo(blogPosts);
+    const blogPosts = await getParsePost();
+    setPostInfo(blogPosts.filter((item: any) => item.isPublic));
     setLoading(false);
+  };
+
+  const parse = async (data: any) => {
+    return showPost(data);
   };
 
   const clickTabHandler = (index: number) => {
     setActivedTab(index);
     if (index === 0) {
-      executeQueryUserPost();
-    } else if (index === 1) {
       executeQueryAllPost();
+    } else if (index === 1) {
+      executeQueryUserPost();
     }
   };
 
@@ -139,35 +139,7 @@ function App() {
     });
   };
 
-  useEffect(() => {
-    if (account) {
-      setUserInfo((prev) => ({
-        ...prev,
-        address: account,
-      }));
-      executeQueryUserPost();
-    }
-  }, []);
-
-  useEffect(() => {
-    const listenerHandler = (res: any) => {
-      if (res.name === 'popup') {
-        res.onMessage.addListener(async (user: UserInfo) => {
-          console.log('🥓: popup.js receive', user);
-          if (user && user?.address) {
-            executeQueryUserPost();
-            setUserInfo(user);
-            setLoading(false);
-            setAccount(user.address)
-          }
-        });
-      }
-    };
-    // 监听链接
-    chrome.runtime?.onConnect.addListener(listenerHandler);
-  }, []);
-
-  return userInfo?.address ? (
+  return (
     <Box className="App">
       <Drawer
         opened={opened}
@@ -187,6 +159,7 @@ function App() {
           },
           drawer: {
             minWidth: 1200,
+            zIndex: 36,
           },
         }}
       >
@@ -223,6 +196,25 @@ function App() {
                         ))}
                     </Box>
                     <Group>
+                      {!subscribeList.includes(actived) && (
+                        <Button
+                          variant="light"
+                          sx={{
+                            marginRight: '12px',
+                          }}
+                          onClick={async () => {
+                            const post = await parse(postInfo[actived]);
+                            setPostInfo((prev) => {
+                              const posts = [...prev];
+                              posts[actived] = post;
+                              return posts;
+                            });
+                            setSubscribeList((prev) => [...prev, actived]);
+                          }}
+                        >
+                          Subscribe
+                        </Button>
+                      )}
                       <ActionIcon>
                         <ThumbUp size={20} />
                       </ActionIcon>
@@ -235,9 +227,16 @@ function App() {
                   </Box>
 
                   <Divider size="lg" sx={{ margin: '24px auto' }} />
-                  <TypographyStylesProvider>
-                    <div style={{ width: '100%' }} dangerouslySetInnerHTML={{ __html: postInfo[actived].content }} />
-                  </TypographyStylesProvider>
+                  {
+                    <TypographyStylesProvider>
+                      <div
+                        style={{ width: '100%' }}
+                        dangerouslySetInnerHTML={{
+                          __html: typeof postInfo[actived].content === 'string' ? postInfo[actived].content : '',
+                        }}
+                      />
+                    </TypographyStylesProvider>
+                  }
                 </Box>
               )}
             </Box>
@@ -286,7 +285,7 @@ function App() {
         </>
       )}
     </Box>
-  ) : null;
+  );
 }
 
 export default App;

@@ -7,10 +7,9 @@ import { useForm, zodResolver } from '@mantine/form';
 // utils
 import { z } from 'zod';
 import { UserInfo } from '../App';
-import { useSubpaseContext } from '../provider/SubpaseProvider';
+import { useWallet } from '../provider/WalletProvider';
 import { noop } from '../utils/functionality';
 import { showNotification } from '@mantine/notifications';
-import { useWallet } from '../provider/WalletProvider';
 
 export type PostInfoProps = {
   age: number;
@@ -53,7 +52,7 @@ function Form(props: FormProps) {
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [value, onChange] = useState('<p>Type @ or # to see mentions autocomplete</p>');
-  const { createPost } = useSubpaseContext();
+  const { encryptPost } = useWallet();
 
   const form = useForm({
     schema: zodResolver(schema),
@@ -81,18 +80,11 @@ function Form(props: FormProps) {
       message: 'Uploading your post...',
       loading,
     });
-    await createPost({
-      pinataContent: {
-        account,
-        ...form.values,
-        content: value,
-        author: userInfo?.address,
-      },
-      pinataMetadata: {
-        keyvalues: {
-          type: 'note',
-        },
-      },
+    await encryptPost({
+      account,
+      ...form.values,
+      content: value,
+      author: userInfo?.address,
     });
     setLoading(false);
     onSaveSuccess();

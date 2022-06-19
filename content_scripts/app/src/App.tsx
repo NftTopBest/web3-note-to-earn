@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
 import {
   Drawer,
   Button,
@@ -7,25 +7,21 @@ import {
   Badge,
   Transition,
   TypographyStylesProvider,
-  LoadingOverlay,
   Title,
   Divider,
   Group,
   ActionIcon,
-  Notification,
 } from '@mantine/core';
-import { Books, Edit, ThumbUp } from 'tabler-icons-react';
 import dayjs from 'dayjs';
 import { useClickOutside } from '@mantine/hooks';
-import Form, { PostInfoProps } from './components/Form';
-import PostList from './components/PostList';
-import { useSubpaseContext } from './provider/SubpaseProvider';
 import { showNotification } from '@mantine/notifications';
-import './App.css';
-import { getPosts } from './service/submarine';
-import axios from 'axios';
+import { Books, Edit, ThumbUp } from 'tabler-icons-react';
+// components
+import PostList from './components/PostList';
+import Form from './components/Form';
 import { useWallet } from './provider/WalletProvider';
-import { useLit } from './provider/LitProvider';
+// CSS
+import './App.css';
 
 export type UserInfo = {
   id: number;
@@ -63,22 +59,36 @@ const COLORS = ['green', 'blue', 'yellow', 'orange'];
 const INFO_LIST = Object.keys(TEMP_BADAGE).map((key) => `${TEMP_BADAGE[key]}: ${key}`);
 
 const handlerDecrypt = async (post: any, callback: (encryptedSymmetricKey: string, encrypedString: string) => any) => {
-  const { decryptedString, err } = await callback(post?.content?.encryptedSymmetricKey, post?.content?.encryptedString);
+  const result = await callback(post?.content?.encryptedSymmetricKey, post?.content?.encryptedString);
 
-  if (err) {
-    console.log('====> err :', err);
+  if (result?.err) {
+    console.log('====> err :', result?.err);
     return;
   }
 
   return {
     ...post,
-    content: decryptedString,
+    content: result?.decryptedString,
   };
 };
 
+const metadataFilter = {
+  keyvalues: {
+    type: {
+      value: 'note',
+      op: 'eq',
+    },
+  },
+};
+
+const filters = {
+  status: 'pinned',
+  pageLimit: 10,
+  pageOffset: 0,
+  metadata: metadataFilter,
+};
+
 function App() {
-  const { getPostList } = useSubpaseContext();
-  const { setAccount } = useWallet();
   const [opened, setOpened] = useState(false);
   const [editing, setEditing] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -86,58 +96,42 @@ function App() {
   const [userInfo, setUserInfo] = useState<Partial<UserInfo> | null>(null);
   const clickOutsideRef = useClickOutside(() => setExpanded(false));
   const [actived, setActived] = useState(0);
-  const { install, decryptContent } = useLit();
   const [activedTab, setActivedTab] = useState(0);
   const [postInfo, setPostInfo] = useState<PostInfo[]>([]);
-  const account = localStorage.getItem('account') ?? '';
+  const accountStorage = localStorage.getItem('account') ?? '';
+  const { isAuthenticated, connectWallet, install, account, setAccount, getPostList, decryptContent } = useWallet();
 
   const goBack = async () => {
     setEditing(false);
-    executeQueryUserPost();
+    // executeQueryUserPost();
   };
 
   const goToEditProfile = () => {
     setEditing(true);
   };
 
-  const metadataFilter = {
-    keyvalues: {
-      type: {
-        value: 'note',
-        op: 'eq',
-      },
-    },
-  };
-
-  const filters = {
-    status: 'pinned',
-    pageLimit: 10,
-    pageOffset: 0,
-    metadata: metadataFilter,
-  };
-
-  const executeQueryUserPost = async () => {
-    setLoading(true);
-    loadingNotification();
-    const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
-    console.log('blogPosts ', blogPosts);
-    setPostInfo(blogPosts);
-    setLoading(false);
-  };
+  // const executeQueryUserPost = async () => {
+  //   setLoading(true);
+  //   loadingNotification();
+  //   const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
+  //   console.log('blogPosts ', blogPosts);
+  //   // setPostInfo(blogPosts);
+  //   setLoading(false);
+  // };
 
   const executeQueryAllPost = async () => {
     setLoading(true);
     loadingNotification();
-    const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
-    console.log('blogPosts ', blogPosts);
-    setPostInfo(blogPosts);
+    // const blogPosts = await handlerDecrypt(await getPostList(filters), decryptContent);
+    // console.log('blogPosts ', blogPosts);
+    // setPostInfo(blogPosts);
     setLoading(false);
   };
 
   const clickTabHandler = (index: number) => {
     setActivedTab(index);
     if (index === 0) {
-      executeQueryUserPost();
+      // executeQueryUserPost();
     } else if (index === 1) {
       executeQueryAllPost();
     }
@@ -157,34 +151,44 @@ function App() {
   };
 
   useEffect(() => {
-    if (account) {
+    if (accountStorage) {
       setUserInfo((prev) => ({
         ...prev,
-        address: account,
+        address: accountStorage,
       }));
-      executeQueryUserPost();
+      // executeQueryUserPost();
     }
   }, []);
 
   useEffect(() => {
-    install();
-
-    const listenerHandler = (res: any) => {
-      if (res.name === 'popup') {
-        res.onMessage.addListener(async (user: UserInfo) => {
-          console.log('🥓: popup.js receive', user);
-          if (user && user?.address) {
-            executeQueryUserPost();
-            setUserInfo(user);
-            setLoading(false);
-            setAccount(user.address);
-          }
-        });
-      }
-    };
-    // 监听链接
-    chrome.runtime?.onConnect.addListener(listenerHandler);
+    connectWallet();
   }, []);
+
+  const clickToConnect = async () => {
+    await connectWallet();
+    // executeQueryUserPost();
+    // setUserInfo(user);
+    setLoading(false);
+    setAccount(accountStorage);
+  };
+
+  // useEffect(() => {
+  //   const listenerHandler = (res: any) => {
+  //     if (res.name === 'popup') {
+  //       res.onMessage.addListener(async (user: UserInfo) => {
+  //         console.log('🥓: popup.js receive', user);
+  //         if (user && user?.address) {
+  //           executeQueryUserPost();
+  //           setUserInfo(user);
+  //           setLoading(false);
+  //           setAccount(user.address);
+  //         }
+  //       });
+  //     }
+  //   };
+  //   // 监听链接
+  //   chrome.runtime?.onConnect.addListener(listenerHandler);
+  // }, []);
 
   return userInfo?.address ? (
     <Box className="App">
@@ -206,9 +210,13 @@ function App() {
           },
           drawer: {
             minWidth: 1200,
+            zIndex: 36,
           },
         }}
       >
+        <Box sx={{ display: 'flex', width: '100%', justifyContent: 'center', marginTop: '36px' }}>
+          <Button onClick={clickToConnect}>{isAuthenticated ? 'Disconnect' : 'Connect'}</Button>
+        </Box>
         {/* <LoadingOverlay visible={loading} /> */}
         {editing && <Form onPreviousClick={goBack} userInfo={userInfo as UserInfo} onSaveSuccess={goBack} />}
         {!editing && (

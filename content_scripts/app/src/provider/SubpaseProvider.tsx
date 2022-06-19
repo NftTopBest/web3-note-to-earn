@@ -54,8 +54,8 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
     const rz = await axios.post(endpoint, postInfo, {
       withCredentials: true,
       headers: {
-        pinata_api_key: '289f4a4ede7a9479505b',
-        pinata_secret_api_key: '4610953acd443e9e90fe153bb09b4096f8f1082b9a0032e77db84930fe0306c7',
+        pinata_api_key: 'be04bff72a2d069f4971',
+        pinata_secret_api_key: '495565df952a88745dd21c51aa151fc2adb8ffff2795a5eae3efa0f2e3492627',
       },
     });
 
@@ -69,8 +69,8 @@ const SubpaseProvider = ({ children }: SubpaseProviderProps) => {
     const result = await axios.get(endpoint, {
       withCredentials: true,
       headers: {
-        pinata_api_key: '289f4a4ede7a9479505b',
-        pinata_secret_api_key: '4610953acd443e9e90fe153bb09b4096f8f1082b9a0032e77db84930fe0306c7',
+        pinata_api_key: 'be04bff72a2d069f4971',
+        pinata_secret_api_key: '495565df952a88745dd21c51aa151fc2adb8ffff2795a5eae3efa0f2e3492627',
       },
     });
     if (result.status !== 200) {

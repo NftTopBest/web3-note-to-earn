@@ -49,11 +49,14 @@ type FormProps = {
 
 function Form(props: FormProps) {
   const { onPreviousClick, userInfo, onSaveSuccess = noop } = props;
-  const { account } = useWallet();
   const [isPublic, setIsPublic] = useState(true);
   const [loading, setLoading] = useState(false);
   const [value, onChange] = useState('<p>Type @ or # to see mentions autocomplete</p>');
-  const { encryptPost } = useLit();
+  const { account, install, encryptPost } = useWallet(); 
+
+  useEffect(() => {
+    install();
+  }, []);
 
   const form = useForm({
     schema: zodResolver(schema),

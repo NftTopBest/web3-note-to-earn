@@ -2,17 +2,17 @@ import LitJsSdk from 'lit-js-sdk';
 import { createContext, useRef, useContext } from 'react';
 import { dataURLtoBlob } from '../utils/blob';
 import { useSubpaseContext } from './SubpaseProvider';
-
+import { useWallet } from './WalletProvider';
 export const LitContext = createContext();
-export const  useLit = () => useContext(LitContext);
+export const useLit = () => useContext(LitContext);
 
 const chain = 'rinkeby';
 const nftAddress = '0x17f6bdf57384fd9f24f1d9a4681c3a9dc839d79e';
 
 export const LitProvider = ({ children }) => {
   const client = useRef();
-  const { createPost } = useSubpaseContext();
-
+  const { createPost, getProvider, ehthersRef } = useSubpaseContext();
+  const { account, web3 } = useWallet();
   const install = async () => {
     console.log('===>>> LIT network is START');
     const litNodeClient = new LitJsSdk.LitNodeClient();
@@ -38,18 +38,16 @@ export const LitProvider = ({ children }) => {
   };
 
   const encryptPost = async (postInfo) => {
-    console.log("postInfo ", postInfo)
+    console.log('postInfo ', postInfo);
+    console.log('client ', client);
+    if (!client.current) return;
+    console.log('ethersProvider before', ehthersRef);
+    const authSig = await LitJsSdk.signAndSaveAuthMessage({ web3: ehthersRef.current, account, chainId: 4 });
+    console.log('ethersProvider after', ehthersRef);
+    console.log("authSig ", authSig);
 
-    const authSig = await LitJsSdk.checkAndSignAuthMessage({ chain });
-    console.log('authSig ', authSig);
     const { encryptedString, symmetricKey } = await LitJsSdk.encryptString(postInfo.content);
-    console.log('symmetricKey ', symmetricKey);
-    console.log('encryptedString ', encryptedString);
-
     const accessControlConditions = getCondition(nftAddress);
-
-    console.log('accessControlConditions ', accessControlConditions);
-
     const encryptedSymmetricKey = await client.current?.saveEncryptionKey({
       accessControlConditions,
       symmetricKey, // Uint8Array
@@ -58,8 +56,6 @@ export const LitProvider = ({ children }) => {
     });
 
     console.log('encryptedSymmetricKey ', encryptedSymmetricKey);
-
-
 
     await createPost({
       pinataContent: {
